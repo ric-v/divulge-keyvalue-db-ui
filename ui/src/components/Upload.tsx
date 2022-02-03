@@ -2,8 +2,6 @@ import React, { FormEvent, useState } from 'react';
 import { Button } from "@mui/material";
 import { useSnackbar } from 'notistack';
 import http from '../services/axios-common';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-import "react-circular-progressbar/dist/styles.css";
 
 const Upload = () => {
 
@@ -72,14 +70,6 @@ const Upload = () => {
       {(uploading)
         ?
         <div className="progress-bar-container">
-          <CircularProgressbar
-            value={uploadProgress}
-            text={`${uploadProgress}% uploaded`}
-            styles={buildStyles({
-              textSize: '10px',
-              pathColor: 'teal',
-            })}
-          />
         </div>
         : null
       }
