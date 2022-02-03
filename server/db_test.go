@@ -125,22 +125,22 @@ func Test_storeDBFile(t *testing.T) {
 	os.RemoveAll("temp")
 }
 
-func Test_createNewDBFile(t *testing.T) {
-	type args struct {
-		ctx *fasthttp.RequestCtx
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "create new db file",
-			args: args{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			newFile(tt.args.ctx)
-		})
-	}
-}
+// func Test_createNewDBFile(t *testing.T) {
+// 	type args struct {
+// 		ctx *fasthttp.RequestCtx
+// 	}
+// 	tests := []struct {
+// 		name string
+// 		args args
+// 	}{
+// 		{
+// 			name: "create new db file",
+// 			args: args{},
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			newFile(tt.args.ctx)
+// 		})
+// 	}
+// }

@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
@@ -35,10 +36,6 @@ func Serve(port string, debug bool) {
 	// /api/v1/ routes
 	v1 := r.Group("/api/v1")
 	{
-
-		v1.POST("/hello", func(ctx *fasthttp.RequestCtx) {
-			ctx.Success("text/plain", []byte("Hello, World!"))
-		})
 
 		// file upload handler for getting boltdb files
 		v1.POST("/upload", uploadFile)
@@ -90,19 +87,19 @@ func Serve(port string, debug bool) {
 		}
 	}
 
-	// // serve files from the "./public" directory
-	// // get the current directory
-	// cwd, _ := os.Getwd()
-	// log.Println("getting current working directory:", cwd)
+	// serve files from the "./public" directory
+	// get the current directory
+	cwd, _ := os.Getwd()
+	log.Println("getting current working directory:", cwd)
 
-	// // if cwd is not the root of the project, then we need to go up one level
-	// if filepath.Base(cwd) == "cmd" {
-	// 	cwd = filepath.Dir(cwd)
-	// }
-	// log.Println("updated cwd for setting file server:", cwd)
+	// if cwd is not the root of the project, then we need to go up one level
+	if filepath.Base(cwd) == "cmd" {
+		cwd = filepath.Dir(cwd)
+	}
+	log.Println("updated cwd for setting file server:", cwd)
 
-	// // set the file server to serve public files
-	// r.ServeFiles("/{filepath:*}", cwd+"/public/")
+	// set the file server to serve public files
+	r.ServeFiles("/{filepath:*}", cwd+"/ui/build/")
 
 	// serve the handlers on the router
 	log.Fatal(fasthttp.ListenAndServe(":"+port, r.Handler))

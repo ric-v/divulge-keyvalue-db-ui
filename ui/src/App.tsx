@@ -5,12 +5,13 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { useSnackbar } from 'notistack';
 
 const ColorModeContext = React.createContext({ toggleColorMode: () => { } });
 
 function App() {
 
-
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [mode, setMode] = React.useState<'light' | 'dark'>('dark');
   const colorMode = React.useMemo(
     () => ({
@@ -57,6 +58,15 @@ function App() {
         localStorage.setItem('file_name', data.filename);
         localStorage.setItem('db_type', data.dbtype);
         console.log('success', data);
+
+        enqueueSnackbar('success', {
+          key: 'success',
+          variant: 'success',
+          draggable: true,
+          onClick: () => {
+            closeSnackbar('success');
+          }
+        });
       })
       .catch(err => {
         console.log('error', err);
