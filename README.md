@@ -1,5 +1,5 @@
 <center>
-<img src="public/assets/img/logo-120px.png" />
+<img src="ui/public/logo-120px.png" />
 <h1> Divulge - Golang Key Value Pair DB Web UI </h1>
 <h3> Divulge "makes known" Key-value DB data. It's yet another Golang service with a simple UI for managing and operating multiple Key Value pair DBs written in Golang. </h3>
 </center>
