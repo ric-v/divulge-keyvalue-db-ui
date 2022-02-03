@@ -1,6 +1,6 @@
 <div align="center">
 <img src="ui/public/logo-120px.png" />
-<h1> Divulge - Golang Key Value Pair DB Web UI </h1>
+<h1> Divulge - Golang Key Value Pair DB Web UI (WIP) </h1>
 <h3> Divulge "makes known" Key-value DB data. It's yet another Golang service with a simple UI for managing and operating multiple Key Value pair DBs written in Golang. </h3>
 
 [![Go](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml/badge.svg)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml)
