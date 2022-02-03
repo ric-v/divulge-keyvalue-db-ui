@@ -101,6 +101,11 @@ func Serve(port string, debug bool) {
 	// set the file server to serve public files
 	r.ServeFiles("/{filepath:*}", cwd+"/ui/build/")
 
+	server := fasthttp.Server{
+		Handler:            r.Handler,
+		MaxRequestBodySize: 1024 * 1024 * 1024, // 1 GB
+		LogAllErrors:       true,
+	}
 	// serve the handlers on the router
-	log.Fatal(fasthttp.ListenAndServe(":"+port, r.Handler))
+	log.Fatal(server.ListenAndServe(":" + port))
 }
