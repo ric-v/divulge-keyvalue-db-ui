@@ -19,7 +19,7 @@ const Upload = () => {
     const formData = new FormData();
     formData.append('file', file);
 
-    http.post('/api/v1/upload', formData, {
+    http.post('/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
