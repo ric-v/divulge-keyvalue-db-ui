@@ -18,11 +18,11 @@ const NavBar = () => {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    console.log('-',event.currentTarget);
+    console.log('-', event.currentTarget);
     setAnchorElNav(event.currentTarget);
   };
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    console.log('-->',event.currentTarget);
+    console.log('-->', event.currentTarget);
     setAnchorElUser(event.currentTarget);
   };
 
