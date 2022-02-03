@@ -1,17 +1,15 @@
 import * as React from 'react';
-import { Box, Button, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import NavBar from "./components/NavBar";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import IconButton from '@mui/material/IconButton';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useSnackbar } from 'notistack';
+import { SnackbarProvider } from 'notistack';
+import '@fontsource/fira-sans';
+import Controller from './components/Controller';
 
 const ColorModeContext = React.createContext({ toggleColorMode: () => { } });
 
 function App() {
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [mode, setMode] = React.useState<'light' | 'dark'>('dark');
   const colorMode = React.useMemo(
     () => ({
@@ -40,63 +38,44 @@ function App() {
           contrastThreshold: 3,
           tonalOffset: 0.2,
         },
+        typography: {
+          fontFamily: ['Fira Sans', 'sans-serif'].join(','),
+        },
+        components: {
+          MuiCssBaseline: {
+            styleOverrides: `
+              @font-face {
+                font-family: 'Fira Sans';
+              }
+            `
+          }
+        }
       }),
     [mode],
   );
 
-  const newFile = (fileName: string) => {
-
-    // GET the file from API server
-    fetch('http://localhost:8080/api/v1/new?file=' + fileName + '&dbtype=boltdb', {
-      method: 'POST',
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log('success', data);
-        // store the access key to local storage
-        localStorage.setItem('access_key', data.dbkey);
-        localStorage.setItem('file_name', data.filename);
-        localStorage.setItem('db_type', data.dbtype);
-        console.log('success', data);
-
-        enqueueSnackbar('success', {
-          key: 'success',
-          variant: 'success',
-          draggable: true,
-          onClick: () => {
-            closeSnackbar('success');
-          }
-        });
-      })
-      .catch(err => {
-        console.log('error', err);
-      });
-  }
-
   return (
-    <ColorModeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
-        <Box sx={{
-          bgcolor: 'background.default',
-          color: 'text.primary',
-          minHeight: '100vh',
-          minWidth: '100%',
-        }}>
-          <NavBar />
-          <Container>
-            <div>
-              <h1>Hello World</h1>
-              <Button variant='contained' color="secondary" onClick={() => newFile('new_file')}>
-                click
-              </Button>
-            </div>
-            <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
-              {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
-          </Container>
-        </Box>
-      </ThemeProvider>
-    </ColorModeContext.Provider>
+    <SnackbarProvider
+      maxSnack={3}
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <Box sx={{
+            bgcolor: 'background.default',
+            color: 'text.primary',
+            minHeight: '100vh',
+            minWidth: '100%',
+          }}>
+            <NavBar toggleColorMode={colorMode.toggleColorMode} theme={theme} />
+            <Controller />
+          </Box>
+        </ThemeProvider>
+      </ColorModeContext.Provider>
+    </SnackbarProvider>
   );
 }
 

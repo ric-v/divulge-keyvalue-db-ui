@@ -25,7 +25,7 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 	log.Println("dbtype:", dbType)
 
 	// get the db file
-	files, err := ctx.FormFile("boltdb")
+	files, err := ctx.FormFile("file")
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
