@@ -11,7 +11,7 @@
 
 Simple DB CRUD operations service. Supports Key-Value pair file based Databases. Upload the DB create a local copy and modify/view data and download the updates.
 
-![in-action-gif](https://github.com/ric-v/divulge-keyvalue-db-ui/blob/main/public/assets/screenshots/in-action.gif)
+<!-- ![in-action-gif](https://github.com/ric-v/divulge-keyvalue-db-ui/blob/main/public/assets/screenshots/in-action.gif) -->
 
 ## Features
 
@@ -41,8 +41,8 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
 - Run commands:
 
 ```bash
-$ chmod +x kv-db-viewer-amd64
-$ ./kv-db-viewer-amd64
+$ chmod +x divulge-viewer-*-amd64
+$ ./divulge-viewer-*-amd64
 ```
 
 - The service will be available at http://localhost:8080/
@@ -55,7 +55,8 @@ $ ./kv-db-viewer-amd64
 ## Technologies used
 
 - Golang 1.17.x
-- javascript (vanila) / HTML / bootstrap 5.x
+- ReactJS 17.x
+- Material UI v5.x
 - [fasthttp](https://github.com/valyala/fasthttp) ([fasthttp mux](https://github.com/fasthttp/router))
 - [BoltDB](https://github.com/boltdb/bolt)
 
