@@ -5,6 +5,7 @@
 </center>
 
 [![Go](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml/badge.svg)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml)
+[![Lint Code Base](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/super-linter.yml/badge.svg)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/super-linter.yml)
 [![CodeQL](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml)
 
 ---
