@@ -1,15 +1,15 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { Theme } from '@mui/material';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import Container from "@mui/material/Container";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { Theme } from "@mui/material";
 
 // const pages = ['Products', 'Pricing', 'Blog'];
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -20,11 +20,13 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
+    null
+  );
   // const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    console.log('-', event.currentTarget);
+    console.log("-", event.currentTarget);
     setAnchorElNav(event.currentTarget);
   };
   // const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -41,20 +43,22 @@ const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
   // };
 
   return (
-    <AppBar position='fixed'>
+    <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
             variant="h6"
             noWrap
             component="div"
-            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
+            sx={{ mr: 2, display: { xs: "none", md: "flex" } }}
           >
-            <img src='/logo-120px.png' width='40px' alt='logo' />
-            <Typography variant="h4" ml={'1rem'}>Divulge</Typography>
+            <img src="/logo-120px.png" width="40px" alt="logo" />
+            <Typography variant="h4" ml={"1rem"}>
+              Divulge
+            </Typography>
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -69,18 +73,18 @@ const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
               id="menu-appbar"
               anchorEl={anchorElNav}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
+                vertical: "top",
+                horizontal: "left",
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                display: { xs: 'block', md: 'none' },
+                display: { xs: "block", md: "none" },
               }}
             >
               {/* {pages.map((page) => (
@@ -94,11 +98,11 @@ const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
+            sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}
           >
-            <img src='/logo-120px.png' width='40px' alt='logo' />
+            <img src="/logo-120px.png" width="40px" alt="logo" />
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {/* {pages.map((page) => (
               <Button
                 key={page}
@@ -111,10 +115,16 @@ const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <IconButton sx={{ ml: 1 }}
+            <IconButton
+              sx={{ ml: 1 }}
               onClick={toggleColorMode}
-              color="inherit">
-              {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              color="inherit"
+            >
+              {theme.palette.mode === "dark" ? (
+                <Brightness7Icon />
+              ) : (
+                <Brightness4Icon />
+              )}
             </IconButton>
             {/* <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>

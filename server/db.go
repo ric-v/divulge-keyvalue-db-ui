@@ -22,36 +22,76 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 
 	// get the DB type from params
 	dbType := string(ctx.QueryArgs().Peek("dbtype"))
+	dbType = database.BOLT_DB
 	log.Println("dbtype:", dbType)
 
 	// get the db file
 	files, err := ctx.FormFile("file")
 	if err != nil {
 		log.Println(err)
-		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		json.NewEncoder(ctx).Encode(apiResponse{
+			Message: "Error reading from form-data: " + err.Error(),
+			Error: []errorResponse{{
+				Message: err.Error(),
+				Code:    fasthttp.StatusBadRequest,
+			}},
+		})
 		return
 	}
 	log.Println(files.Filename, files.Size)
 
 	// save the file to temp dir
-	dbKey := uuid.New()
+	accessKey := uuid.New().String()
 
 	// make new folder
-	log.Println("making new folder", "temp"+string(os.PathSeparator)+dbKey.String())
-	os.Mkdir("temp"+string(os.PathSeparator)+dbKey.String(), 0777)
+	log.Println("making new folder", "temp"+string(os.PathSeparator)+accessKey)
+	os.Mkdir("temp"+string(os.PathSeparator)+accessKey, 0777)
 
 	// save the uploaded file in the temp dir
-	log.Println("saving file to dir: ", "temp"+string(os.PathSeparator)+dbKey.String()+string(os.PathSeparator)+files.Filename)
-	err = fasthttp.SaveMultipartFile(files, "temp"+string(os.PathSeparator)+dbKey.String()+string(os.PathSeparator)+files.Filename)
+	log.Println("saving file to dir: ", "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
+	err = fasthttp.SaveMultipartFile(files, "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
 	if err != nil {
 		log.Println(err)
-		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		ctx.SetStatusCode(fasthttp.StatusBadRequest)
+		json.NewEncoder(ctx).Encode(apiResponse{
+			Message: "Error getting db file from form: " + err.Error(),
+			Error: []errorResponse{{
+				Message: err.Error(),
+				Code:    fasthttp.StatusBadRequest,
+			}},
+		})
 		return
+	}
+
+	// switch on db type
+	switch dbType {
+
+	case database.BOLT_DB:
+
+		// create the new boltdb file in the temp dir
+		log.Println("creating new boltdb file:", "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
+		db, err := database.NewDB("temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename, dbType)
+		if err != nil {
+			log.Println(err)
+			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+			json.NewEncoder(ctx).Encode(apiResponse{
+				Message: "Error creating boltdb file: " + err.Error(),
+				Error: []errorResponse{{
+					Message: err.Error(),
+					Code:    fasthttp.StatusInternalServerError,
+				}},
+			})
+			return
+		}
+
+		// store the db access in the session
+		session.Store(accessKey, Session{accessKey, files.Filename, dbType, db})
 	}
 
 	// return success message to UI
 	json.NewEncoder(ctx).Encode(apiResponse{
-		DBKey:    dbKey.String(),
+		DBKey:    accessKey,
 		FileName: files.Filename,
 		DBType:   dbType,
 		Message:  "Successfully opened boltdb file",

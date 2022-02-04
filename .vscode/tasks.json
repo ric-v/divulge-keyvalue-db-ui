@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "run",
+            "label": "go run",
             "type": "shell",
             "command": "go run cmd/main.go",
             "problemMatcher": [
