@@ -69,8 +69,10 @@ function App() {
             color: 'text.primary',
             minHeight: '100vh',
             minWidth: '100%',
+            py: [5, 8],
           }}>
             <NavBar toggleColorMode={colorMode.toggleColorMode} theme={theme} />
+            {/* margin */}
             <Controller />
           </Box>
         </ThemeProvider>
