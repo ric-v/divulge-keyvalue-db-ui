@@ -41,7 +41,7 @@ const NavBar: React.FC<NavBarProps> = ({ toggleColorMode, theme }) => {
   // };
 
   return (
-    <AppBar position="static">
+    <AppBar position='fixed'>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography

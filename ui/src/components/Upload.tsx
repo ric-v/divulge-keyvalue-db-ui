@@ -2,6 +2,7 @@ import React, { FormEvent, useState } from 'react';
 import { Button } from "@mui/material";
 import { useSnackbar } from 'notistack';
 import http from '../services/axios-common';
+import ProgressBar from './ProgressBar';
 
 const Upload = () => {
 
@@ -19,7 +20,7 @@ const Upload = () => {
     const formData = new FormData();
     formData.append('file', file);
 
-    http.post('/upload', formData, {
+    http.post('/api/v1/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -57,6 +58,16 @@ const Upload = () => {
           e.preventDefault();
           if (e.target.files && e.target.files.length > 0) {
             setFile(e.target.files[0])
+            if (e.target.files[0].size > 1000000000) { // 1GB
+              enqueueSnackbar('File size is too big', {
+                key: 'file-size',
+                variant: 'error',
+                onClick: () => {
+                  closeSnackbar('file-size');
+                }
+              });
+              setFile('');
+            }
           }
         }}
       />
@@ -64,12 +75,14 @@ const Upload = () => {
         variant='contained'
         color="secondary"
         type='submit'
+        disabled={!file || uploading}
       >
         Upload
       </Button>
-      {(uploading)
+      {(uploadProgress > 0 && uploadProgress < 100)
         ?
         <div className="progress-bar-container">
+          <ProgressBar progress={uploadProgress} />
         </div>
         : null
       }
@@ -78,29 +91,3 @@ const Upload = () => {
 };
 
 export default Upload;
-
-    // // GET the file from API server
-    // fetch('http://localhost:8080/api/v1/new?file='  fileName  '&dbtype=boltdb', {
-    //   method: 'POST',
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     console.log('success', data);
-    //     // store the access key to local storage
-    //     localStorage.setItem('access_key', data.dbkey);
-    //     localStorage.setItem('file_name', data.filename);
-    //     localStorage.setItem('db_type', data.dbtype);
-    //     console.log('success', data);
-
-    //     enqueueSnackbar('success', {
-    //       key: 'success',
-    //       variant: 'success',
-    //       draggable: true,
-    //       onClick: () => {
-    //         closeSnackbar('success');
-    //       }
-    //     });
-    //   })
-    //   .catch(err => {
-    //     console.log('error', err);
-    //   });

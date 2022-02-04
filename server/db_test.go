@@ -54,7 +54,7 @@ func multiFormFileGen(fileName string) (*multipart.Writer, *bytes.Buffer, error)
 		return writer, body, err
 	}
 
-	formFile, err := writer.CreateFormFile("boltdb", fileName)
+	formFile, err := writer.CreateFormFile("file", fileName)
 	if err != nil {
 		fmt.Println(err)
 		return writer, body, err

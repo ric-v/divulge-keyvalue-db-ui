@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
@@ -105,6 +106,8 @@ func Serve(port string, debug bool) {
 		Handler:            r.Handler,
 		MaxRequestBodySize: 1024 * 1024 * 1024, // 1 GB
 		LogAllErrors:       true,
+		ReadTimeout:        10 * time.Second,
+		WriteTimeout:       10 * time.Second,
 	}
 	// serve the handlers on the router
 	log.Fatal(server.ListenAndServe(":" + port))
