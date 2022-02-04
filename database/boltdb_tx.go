@@ -80,6 +80,23 @@ func (db *BoltDB) Delete(key string) error {
 	})
 }
 
-func (db *BoltBucket) Add() {
-	
+// List godoc - Lists all key/value pairs in the database
+func (db *BoltDB) List(args ...interface{}) (data []KeyValuePair, err error) {
+
+	err = db.View(func(tx *bolt.Tx) error {
+
+		// open the bucket
+		b := tx.Bucket([]byte(args[0].(string)))
+		if b == nil {
+			return errors.New("bucket not found")
+		}
+
+		// get all keys
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			data = append(data, KeyValuePair{string(k), string(v)})
+		}
+		return nil
+	})
+	return
 }

@@ -131,6 +131,21 @@ func newFile(ctx *fasthttp.RequestCtx) {
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 			return
 		}
+		defer db.CloseDB()
+
+		// store the db access in the session
+		session.Store(accessKey, Session{accessKey, file, dbType, db})
+
+	case database.BUNT_DB:
+
+		// create the new buntdb file in the temp dir
+		log.Println("creating new buntdb file:", "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+file)
+		db, err := database.NewDB("temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+file, dbType)
+		if err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 
 		// store the db access in the session
 		session.Store(accessKey, Session{accessKey, file, dbType, db})
@@ -150,13 +165,13 @@ func newFile(ctx *fasthttp.RequestCtx) {
 // Opens the boltdb file and returns the file key-value paid for rendering in UI.
 func listKeyValue(ctx *fasthttp.RequestCtx) {
 
-	var data interface{}
+	var data []database.KeyValuePair
 	// get the accesskey from params
-	accessKey := string(ctx.UserValue("accesskey").(string))
+	accessKey := string(ctx.QueryArgs().Peek("accesskey"))
 	log.Println("accesskey:", accessKey)
 
 	// get the accesskey from params
-	file := string(ctx.UserValue("file").(string))
+	file := string(ctx.QueryArgs().Peek("file"))
 	file, _ = url.QueryUnescape(file)
 	log.Println("file:", file)
 
@@ -167,7 +182,7 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 	// switch on db type
 	switch dbType {
 
-	case "boltdb":
+	case database.BOLT_DB:
 
 		// get the DB type from params
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
@@ -183,7 +198,28 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 		db := userSession.(Session).DB
 
 		// open view on the boltdb file
-		views, err := db.Get("test")
+		views, err := db.List()
+		if err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
+		log.Println("views:", views)
+		data = views
+
+	case database.BUNT_DB:
+
+		// load the db from user session
+		userSession, valid := session.Load(accessKey)
+		if !valid {
+			log.Println("invalid accesskey")
+			ctx.Error("invalid accesskey", fasthttp.StatusBadRequest)
+			return
+		}
+		db := userSession.(Session).DB
+
+		// open view on the boltdb file
+		views, err := db.List()
 		if err != nil {
 			log.Println(err)
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -193,13 +229,57 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 		data = views
 	}
 
+	// init new datagrid object
+	var datagrid = Datagrid{
+		Columns: []Columns{
+			{
+				Field: "id",
+				Hide:  true,
+			}, {
+				Field:      "key",
+				HeaderName: "KEY",
+				Hide:       false,
+			}, {
+				Field:      "value",
+				HeaderName: "VALUE",
+				Hide:       false,
+			},
+		},
+		Rows: []Rows{
+			{
+				ID:    "1",
+				Key:   "key1",
+				Value: "value1",
+			},
+		},
+		InitialState: InitState{
+			Columns: InitColumns{
+				ColumnVisibilityModel: InitColumnVisibilityModel{
+					Id: false,
+				},
+			},
+		},
+	}
+
+	// loop through the data and create a datagrid
+	for index, kv := range data {
+		datagrid.Rows = append(
+			datagrid.Rows,
+			Rows{
+				ID:    fmt.Sprint(index),
+				Key:   kv.Key,
+				Value: kv.Value,
+			},
+		)
+	}
+
 	// return success message to UI
 	json.NewEncoder(ctx).Encode(apiResponse{
 		DBKey:    accessKey,
 		FileName: file,
 		DBType:   dbType,
 		Message:  "Successfully opened boltdb file: " + accessKey,
-		Data:     data,
+		Data:     datagrid,
 		Error:    nil,
 	})
 }

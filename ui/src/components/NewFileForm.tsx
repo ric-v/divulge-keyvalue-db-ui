@@ -13,7 +13,7 @@ type Props = {
 const NewFileForm = (props: Props) => {
   return (
     <>
-      <Typography variant="h3">Create new database file</Typography>
+      <Typography variant="h3" color='primary'>Create new database file</Typography>
       <Box
         component="form"
         sx={{

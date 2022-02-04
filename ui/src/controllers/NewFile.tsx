@@ -24,7 +24,7 @@ const NewFile = () => {
 
   const createNewFile = () => {
     http
-      .post("/api/v1/new?file=" + dbname + ".db&dbtype=boltdb")
+      .post("/api/v1/new?file=" + dbname + ".db&dbtype=buntdb")
       .then((resp) => {
         enqueueSnackbar("File created successfully", {
           key: "success",
@@ -36,6 +36,8 @@ const NewFile = () => {
         });
         console.log(resp);
         setDbname("");
+        localStorage.setItem("dbname", resp.data.filename);
+        localStorage.setItem("accesskey", resp.data.dbkey);
       })
       .catch((err) => {
         enqueueSnackbar(err.response.data.message, {

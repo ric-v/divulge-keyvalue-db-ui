@@ -12,6 +12,7 @@ type BuntDB struct {
 // openBunt godoc - Creates a new BuntDB instance
 func openBunt(fileName string) (db *BuntDB, err error) {
 
+	db = &BuntDB{}
 	// open new bolt file
 	db.DB, err = buntdb.Open(fileName)
 	return
@@ -57,4 +58,17 @@ func (db *BuntDB) Delete(key string) error {
 		_, err := tx.Delete(key)
 		return err
 	})
+}
+
+// List godoc - Lists all keys in the database
+func (db *BuntDB) List(args ...interface{}) (data []KeyValuePair, err error) {
+
+	err = db.View(func(tx *buntdb.Tx) error {
+		tx.Ascend("", func(key, value string) bool {
+			data = append(data, KeyValuePair{key, value})
+			return true
+		})
+		return nil
+	})
+	return
 }

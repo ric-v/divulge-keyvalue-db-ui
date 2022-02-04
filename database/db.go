@@ -7,12 +7,18 @@ const (
 	BUNT_DB = "buntdb"
 )
 
+type KeyValuePair struct {
+	Key   string
+	Value string
+}
+
 // DB interface for underlying database packages
 type DB interface {
 	Add(string, string, ...interface{}) error
 	CloseDB()
 	Get(key string) (string, error) // TODO: add list all keys
 	Delete(string) error
+	List(args ...interface{}) ([]KeyValuePair, error)
 }
 
 // BoltBuckets interface for underlying bolt DB buckets

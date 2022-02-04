@@ -7,8 +7,38 @@ type apiResponse struct {
 	FileName string          `json:"filename"`
 	DBType   string          `json:"dbtype"`
 	Message  string          `json:"message"`
-	Data     interface{}     `json:"data"`
+	Data     Datagrid        `json:"data"`
 	Error    []errorResponse `json:"error"`
+}
+
+type Datagrid struct {
+	Columns      []Columns `json:"columns"`
+	Rows         []Rows    `json:"rows"`
+	InitialState InitState `json:"initialState"`
+}
+
+type Columns struct {
+	Field      string `json:"field"`
+	HeaderName string `json:"headerName"`
+	Hide       bool   `json:"hide"`
+}
+
+type Rows struct {
+	ID    string `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type InitState struct {
+	Columns InitColumns `json:"columns"`
+}
+
+type InitColumns struct {
+	ColumnVisibilityModel InitColumnVisibilityModel `json:"columnVisibilityModel"`
+}
+
+type InitColumnVisibilityModel struct {
+	Id bool `json:"id"`
 }
 
 type errorResponse struct {

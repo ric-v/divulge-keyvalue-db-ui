@@ -28,7 +28,9 @@ const BoxView: React.FC<Props> = ({
   return (
     // box with margin on top
     <>
-      <Typography variant="h3">Select your database file</Typography>
+      <Typography variant="h3" color="primary">
+        Select your database file
+      </Typography>
       <Box
         component="form"
         onSubmit={handleFileUpload}

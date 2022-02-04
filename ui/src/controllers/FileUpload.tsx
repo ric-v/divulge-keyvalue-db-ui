@@ -43,6 +43,8 @@ const FileUpload = () => {
           },
         });
         console.log(resp);
+        localStorage.setItem("dbname", resp.data.filename);
+        localStorage.setItem("accesskey", resp.data.dbkey);
       })
       .catch((err) => {
         enqueueSnackbar(err.response.data.message, {
