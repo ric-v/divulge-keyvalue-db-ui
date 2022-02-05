@@ -6,6 +6,7 @@
 [![Go](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml)
 [![CodeQL](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ric-v/divulge-keyvalue-db-ui)](https://goreportcard.com/report/github.com/ric-v/divulge-keyvalue-db-ui)
+[![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 
 </div>
 
@@ -18,11 +19,10 @@ Simple DB CRUD operations service. Supports Key-Value pair file based Databases.
 ## Features
 
 - Upload existing DB
-- View Buckets in boltDB
-- View Key-Value pairs under a boltDB bucket
-- Add new bucket
-- Add new Key-Value pair under a bucket
-- Remove a bucket
+- View Key-Value pairs
+- Add new Key-Value pair (WIP)
+- View Buckets in boltDB (WIP)
+- Add / remove bucket (WIP)
 - Move/Copy Key-Value pair under a bucket to another bucket (WIP)
 
 ## Usage
