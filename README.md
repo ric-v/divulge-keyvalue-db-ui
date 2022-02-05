@@ -34,7 +34,7 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
 - Unzip / Untar the release
 - Open the folder
 - Run the .exe file (in the pop up screen, click more info > Run anyway > allow firewall access if the pop-up comes)
-- The service will be available at http://localhost:8080/
+- The service will be available at <http://localhost:8080/>
 
 ### linux
 
@@ -43,16 +43,16 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
 - Run commands:
 
 ```bash
-$ chmod +x divulge-viewer-*-amd64
-$ ./divulge-viewer-*-amd64
+chmod +x divulge-viewer-*-amd64
+./divulge-viewer-*-amd64
 ```
 
-- The service will be available at http://localhost:8080/
+- The service will be available at <http://localhost:8080/>
 
 ## Supported DB
 
-- [BoltDB](https://github.com/boltdb/bolt)
-- [BuntDB](https://github.com/tidwall/buntdb) (WIP)
+- [BuntDB](https://github.com/tidwall/buntdb)
+- [BoltDB](https://github.com/boltdb/bolt) (WIP)
 
 ## Technologies used
 
@@ -61,5 +61,6 @@ $ ./divulge-viewer-*-amd64
 - Material UI v5.x
 - [fasthttp](https://github.com/valyala/fasthttp) ([fasthttp mux](https://github.com/fasthttp/router))
 - [BoltDB](https://github.com/boltdb/bolt)
+- [BuntDB](https://github.com/tidwall/buntdb)
 
 _Code.Share.Prosper_
