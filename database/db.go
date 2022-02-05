@@ -3,7 +3,9 @@ package database
 import "errors"
 
 const (
+	// BOLT_DB - BoltDB
 	BOLT_DB = "boltdb"
+	// BUNT_DB - BuntDB
 	BUNT_DB = "buntdb"
 )
 
@@ -21,7 +23,7 @@ type DB interface {
 	List(args ...interface{}) ([]KeyValuePair, error)
 }
 
-// BoltBuckets interface for underlying bolt DB buckets
+// Buckets interface for underlying bolt DB buckets
 type Buckets interface {
 	Add()
 	Get()
@@ -32,6 +34,7 @@ type Buckets interface {
 // DBType for identifying underlying database packages
 type DBType string
 
+// NewDB godoc - creates a new DB instance abstracting the underlying database package
 func NewDB(fileName string, dbtype string) (DB, error) {
 
 	// TODO: Add support for other database packages

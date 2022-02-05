@@ -12,6 +12,7 @@ type BoltDB struct {
 	bucketName []byte
 }
 
+// BoltBucket godoc - BoltDB Bucket struct
 type BoltBucket struct {
 	*bolt.DB
 }
@@ -86,7 +87,7 @@ func (db *BoltDB) List(args ...interface{}) (data []KeyValuePair, err error) {
 	err = db.View(func(tx *bolt.Tx) error {
 
 		// open the bucket
-		b := tx.Bucket([]byte(args[0].(string)))
+		b := tx.Bucket(db.bucketName)
 		if b == nil {
 			return errors.New("bucket not found")
 		}
