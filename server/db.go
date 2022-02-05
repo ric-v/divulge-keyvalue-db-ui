@@ -22,7 +22,6 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 
 	// get the DB type from params
 	dbType := string(ctx.QueryArgs().Peek("dbtype"))
-	dbType = database.BOLT_DB
 	log.Println("dbtype:", dbType)
 
 	// get the db file
@@ -61,33 +60,29 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 				Code:    fasthttp.StatusBadRequest,
 			}},
 		})
+		os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
 		return
 	}
 
-	// switch on db type
-	switch dbType {
-
-	case database.BOLT_DB:
-
-		// create the new boltdb file in the temp dir
-		log.Println("creating new boltdb file:", "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
-		db, err := database.NewDB("temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename, dbType)
-		if err != nil {
-			log.Println(err)
-			ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-			json.NewEncoder(ctx).Encode(apiResponse{
-				Message: "Error creating boltdb file: " + err.Error(),
-				Error: []errorResponse{{
-					Message: err.Error(),
-					Code:    fasthttp.StatusInternalServerError,
-				}},
-			})
-			return
-		}
-
-		// store the db access in the session
-		session.Store(accessKey, Session{accessKey, files.Filename, dbType, db})
+	// create the new boltdb file in the temp dir
+	log.Println("creating new boltdb file:", "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
+	db, err := database.NewDB("temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename, dbType)
+	if err != nil {
+		log.Println(err)
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		json.NewEncoder(ctx).Encode(apiResponse{
+			Message: "Error creating boltdb file: " + err.Error(),
+			Error: []errorResponse{{
+				Message: err.Error(),
+				Code:    fasthttp.StatusInternalServerError,
+			}},
+		})
+		os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
+		return
 	}
+
+	// store the db access in the session
+	session.Store(accessKey, Session{accessKey, files.Filename, dbType, db})
 
 	// return success message to UI
 	json.NewEncoder(ctx).Encode(apiResponse{
@@ -129,6 +124,7 @@ func newFile(ctx *fasthttp.RequestCtx) {
 		if err != nil {
 			log.Println(err)
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
 			return
 		}
 		defer db.CloseDB()
@@ -144,6 +140,7 @@ func newFile(ctx *fasthttp.RequestCtx) {
 		if err != nil {
 			log.Println(err)
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
 			return
 		}
 
@@ -233,8 +230,9 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 	var datagrid = Datagrid{
 		Columns: []Columns{
 			{
-				Field: "id",
-				Hide:  true,
+				Field:      "id",
+				HeaderName: "#",
+				Hide:       false,
 			}, {
 				Field:      "key",
 				HeaderName: "KEY",
@@ -249,28 +247,7 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 				Hide:       false,
 			},
 		},
-		Rows: []Rows{
-			{
-				ID:    "1",
-				Key:   "key1",
-				Value: "value1",
-			},
-			{
-				ID:    "2",
-				Key:   "key2",
-				Value: "value2",
-			},
-			{
-				ID:    "3",
-				Key:   "key3",
-				Value: "value3",
-			},
-			{
-				ID:    "4",
-				Key:   "key4",
-				Value: "value4",
-			},
-		},
+		Rows: []Rows{},
 		InitialState: InitState{
 			Columns: InitColumns{
 				ColumnVisibilityModel: InitColumnVisibilityModel{
@@ -281,11 +258,11 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 	}
 
 	// loop through the data and create a datagrid
-	for index, kv := range data {
+	for i, kv := range data {
 		datagrid.Rows = append(
 			datagrid.Rows,
 			Rows{
-				ID:    fmt.Sprint(index),
+				ID:    fmt.Sprint(i + 1),
 				Key:   kv.Key,
 				Value: kv.Value,
 			},
@@ -311,8 +288,18 @@ func getKeyValue(ctx *fasthttp.RequestCtx) {
 func removeFile(ctx *fasthttp.RequestCtx) {
 
 	// get the accesskey from params
-	accessKey := string(ctx.UserValue("accesskey").(string))
+	accessKey := string(ctx.QueryArgs().Peek("accesskey"))
 	log.Println("accesskey:", accessKey)
+
+	// load the db from user session
+	userSession, valid := session.Load(accessKey)
+	if !valid {
+		log.Println("invalid accesskey")
+		ctx.Error("invalid accesskey", fasthttp.StatusBadRequest)
+		return
+	}
+	userSession.(Session).DB.CloseDB()
+	session.Delete(accessKey)
 
 	// remove the folder
 	log.Println("removing folder:", "temp"+string(os.PathSeparator)+accessKey)

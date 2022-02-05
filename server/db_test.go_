@@ -69,7 +69,7 @@ func multiFormFileGen(fileName string) (*multipart.Writer, *bytes.Buffer, error)
 	return writer, body, err
 }
 
-func Test_storeDBFile(t *testing.T) {
+func Test_uploadFile(t *testing.T) {
 	tests := []struct {
 		name           string
 		fileName       string

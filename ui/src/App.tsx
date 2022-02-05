@@ -87,6 +87,18 @@ function App() {
               fontSize: "2.5rem",
             },
           },
+          h5: {
+            fontSize: "1rem",
+            fontWeight: "bold",
+            fontVariantLigatures: "common-ligatures",
+            fontVariant: "small-caps",
+            "@media (min-width:800px)": {
+              fontSize: "1.5rem",
+            },
+            "@media (min-width:1600px)": {
+              fontSize: "2rem",
+            },
+          },
         },
         components: {
           MuiCssBaseline: {
@@ -131,7 +143,6 @@ function App() {
                 toggleColorMode={colorMode.toggleColorMode}
                 theme={theme}
               />
-              {/* margin */}
               <Controller />
             </Grid>
           </Grid>

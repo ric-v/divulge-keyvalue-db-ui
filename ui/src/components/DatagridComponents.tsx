@@ -13,7 +13,6 @@ import {
   gridPageSelector,
   gridPageCountSelector,
 } from "@mui/x-data-grid";
-import { useState } from "react";
 
 export const CustomToolbar = () => {
   return (
