@@ -9,16 +9,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-func init() {
-
-	// check if required directories exist
-	if _, err := os.Stat("temp"); os.IsNotExist(err) {
-		log.Println("creating ./temp directory")
-		os.Mkdir("temp", 0755)
-	}
-
-}
-
+// Serve godoc - starts the server
 func Serve(port string, debug bool) {
 
 	if debug {

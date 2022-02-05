@@ -30,7 +30,7 @@ func (db *BuntDB) Add(key string, value string, args ...interface{}) error {
 	err := db.Update(func(tx *buntdb.Tx) error {
 
 		// insert new key-value pair to db
-		_, _, err := tx.Set(key, value, args[0].(*buntdb.SetOptions))
+		_, _, err := tx.Set(key, value, nil)
 		return err
 	})
 	return err

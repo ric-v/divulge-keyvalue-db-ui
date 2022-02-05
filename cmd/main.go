@@ -3,10 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/ric-v/divulge-keyvalue-db-ui/server"
 )
 
+// Version is the current version of the application
 var Version = "undefined"
 
 func main() {
@@ -23,6 +26,11 @@ func main() {
 		return
 	}
 
+	// check if required directories exist
+	if _, err := os.Stat("temp"); os.IsNotExist(err) {
+		log.Println("creating ./temp directory")
+		os.Mkdir("temp", 0755)
+	}
 	// main service
 	server.Serve(*port, *debug)
 }

@@ -3,8 +3,10 @@ package server
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -15,6 +17,16 @@ import (
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttputil"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	// check if required directories exist
+	if _, err := os.Stat("temp"); os.IsNotExist(err) {
+		log.Println("creating ./temp directory")
+		os.Mkdir("temp", 0755)
+	}
+}
 
 // serve serves http request using provided fasthttp handler
 func serve(handler fasthttp.RequestHandler, req *http.Request) (*http.Response, error) {
@@ -84,14 +96,13 @@ func Test_uploadFile(t *testing.T) {
 		},
 		{
 			name:           "invalid file",
-			fileName:       "wrong.db",
+			fileName:       "test.db",
 			wantStatusCode: http.StatusBadRequest,
-			wantErr:        true,
+			wantErr:        false,
 		},
 	}
 
 	testDB, _ := boltdb.New("test.db")
-	defer testDB.Close()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -115,14 +126,28 @@ func Test_uploadFile(t *testing.T) {
 			req.URL.RawQuery = q.Encode()
 
 			// create a new client
-			res, _ := serve(uploadFile, req)
+			res, err := serve(uploadFile, req)
 			if res.StatusCode != tt.wantStatusCode {
 				t.Errorf("got http code = %v, want http code %v", res.StatusCode, tt.wantStatusCode)
+				return
+			}
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got error = %v, want error %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(res, err)
+			var apiResp apiResponse
+			json.NewDecoder(res.Body).Decode(&apiResp)
+			db, ok := session.Load(apiResp.DBKey)
+			if ok {
+				db.(Session).DB.CloseDB()
+				session.Delete(apiResp.DBKey)
 			}
 		})
 	}
+	testDB.Close()
 	os.RemoveAll("test.db")
-	os.RemoveAll("temp")
 }
 
 // func Test_createNewDBFile(t *testing.T) {

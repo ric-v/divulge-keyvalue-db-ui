@@ -11,12 +11,14 @@ type apiResponse struct {
 	Error    []errorResponse `json:"error"`
 }
 
+// Datagrid - Datagrid struct for data visualization in UI
 type Datagrid struct {
 	Columns      []Columns `json:"columns"`
 	Rows         []Rows    `json:"rows"`
 	InitialState InitState `json:"initialState"`
 }
 
+// Columns - Columns for the datagrid header secion
 type Columns struct {
 	Field      string `json:"field"`
 	HeaderName string `json:"headerName"`
@@ -25,20 +27,24 @@ type Columns struct {
 	Hide       bool   `json:"hide"`
 }
 
+// Rows - Rows for the datagrid body section
 type Rows struct {
 	ID    string `json:"id"`
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+// InitState - Initial state for the datagrid view
 type InitState struct {
 	Columns InitColumns `json:"columns"`
 }
 
+// InitColumns - Initial columns for the datagrid view
 type InitColumns struct {
 	ColumnVisibilityModel InitColumnVisibilityModel `json:"columnVisibilityModel"`
 }
 
+// InitColumnVisibilityModel - Initial column visibility model for the datagrid view
 type InitColumnVisibilityModel struct {
 	Id bool `json:"id"`
 }
@@ -48,6 +54,7 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
+// Server - for managing db sessions with unique accesskey for each open session from UI
 type Session struct {
 	AccessKey string
 	FileName  string
