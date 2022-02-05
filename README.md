@@ -5,8 +5,9 @@
 
 [![Go](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/go.yml)
 [![CodeQL](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ric-v/divulge-keyvalue-db-ui)](https://goreportcard.com/report/github.com/ric-v/divulge-keyvalue-db-ui)
 [![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ric-v/divulge-keyvalue-db-ui)](https://goreportcard.com/report/github.com/ric-v/divulge-keyvalue-db-ui)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ric-v_divulge-keyvalue-db-ui&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ric-v_divulge-keyvalue-db-ui)
 
 </div>
 
