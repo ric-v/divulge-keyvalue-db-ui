@@ -1,7 +1,13 @@
-import * as React from "react";
+import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import http from "../services/axios-common";
+import {
+  CustomToolbar,
+  CustomNoRowsOverlay,
+  CustomFooterStatusComponent,
+} from "../components/DatagridComponents";
+import { Box, Button } from "@mui/material";
 
 type Props = {
   accesskey: string;
@@ -18,32 +24,16 @@ export default function FixedSizeGrid(props: Props) {
       {
         field: "key",
         headerName: "KEY",
-        width: 110,
+        flex: 1,
       },
       {
         field: "value",
         headerName: "VALUE",
-        width: 180,
+        flex: 3,
         editable: true,
       },
     ],
-    rows: [
-      {
-        id: "93b20245-b180-503f-b45e-317b3e2a0ee1",
-        key: "D-8966",
-        value: "Sugar No.11",
-      },
-      {
-        id: "d6ef22ed-f6f8-53a2-8341-975df7e29279",
-        key: "D-3840",
-        value: "Rapeseed",
-      },
-      {
-        id: "98eb7594-1010-55b2-9dc3-9af24529a856",
-        key: "D-1614",
-        value: "Wheat",
-      },
-    ],
+    rows: [],
     initialState: {
       columns: {
         columnVisibilityModel: {
@@ -53,10 +43,11 @@ export default function FixedSizeGrid(props: Props) {
     },
   };
 
-  const [dataGrid, setDataGrid] = React.useState(data);
+  const [dataGrid, setDataGrid] = useState(data);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [status, setStatus] = useState("connected");
 
-  const loadData = () => {
+  useEffect(() => {
     http
       .get(
         "/api/v1/db/?accesskey=" +
@@ -73,7 +64,7 @@ export default function FixedSizeGrid(props: Props) {
             closeSnackbar("load");
           },
         });
-        console.log('setting data',resp.data);
+        console.log("setting data", resp.data);
         setDataGrid(resp.data.data);
       })
       .catch((err) => {
@@ -86,16 +77,38 @@ export default function FixedSizeGrid(props: Props) {
           },
         });
       });
-  };
-  loadData();
-  console.log("-->", data);
+  }, []);
 
   return (
-    <div style={{ height: 400, width: "100%" }}>
-      <div style={{ height: 350, width: "100%" }}>
+    <Box sx={{ width: 1 }}>
+      <Box sx={{ height: 350, width: 1, mb: 2 }}>
         {/* @ts-ignore */}
-        <DataGrid {...dataGrid} />
-      </div>
-    </div>
+        <DataGrid
+          density={"compact"}
+          disableColumnMenu={true}
+          components={{
+            Toolbar: CustomToolbar,
+            NoRowsOverlay: CustomNoRowsOverlay,
+            Footer: CustomFooterStatusComponent,
+          }}
+          componentsProps={{
+            footer: { status: status },
+          }}
+          pageSize={15}
+          {...dataGrid}
+        />
+      </Box>
+      <Button
+        color="primary"
+        variant="contained"
+        onClick={() =>
+          setStatus((current) =>
+            current === "connected" ? "disconnected" : "connected"
+          )
+        }
+      >
+        {status === "connected" ? "Disconnect" : "Connect"}
+      </Button>
+    </Box>
   );
 }

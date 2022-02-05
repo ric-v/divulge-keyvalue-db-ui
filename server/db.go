@@ -238,10 +238,14 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 			}, {
 				Field:      "key",
 				HeaderName: "KEY",
+				Flex:       1,
+				Editable:   false,
 				Hide:       false,
 			}, {
 				Field:      "value",
 				HeaderName: "VALUE",
+				Flex:       3,
+				Editable:   true,
 				Hide:       false,
 			},
 		},
@@ -250,6 +254,21 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 				ID:    "1",
 				Key:   "key1",
 				Value: "value1",
+			},
+			{
+				ID:    "2",
+				Key:   "key2",
+				Value: "value2",
+			},
+			{
+				ID:    "3",
+				Key:   "key3",
+				Value: "value3",
+			},
+			{
+				ID:    "4",
+				Key:   "key4",
+				Value: "value4",
 			},
 		},
 		InitialState: InitState{

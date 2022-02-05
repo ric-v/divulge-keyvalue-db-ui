@@ -20,6 +20,8 @@ type Datagrid struct {
 type Columns struct {
 	Field      string `json:"field"`
 	HeaderName string `json:"headerName"`
+	Flex       int    `json:"flex"`
+	Editable   bool   `json:"editable"`
 	Hide       bool   `json:"hide"`
 }
 
