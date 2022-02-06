@@ -34,6 +34,8 @@ func Serve(port string, debug bool) {
 		// create new database file
 		v1.POST("/new", newFile)
 
+		v1.POST("/load", loadFile)
+
 		// close the boltdb file and remove the entries
 		v1.DELETE("/clear", removeFile)
 

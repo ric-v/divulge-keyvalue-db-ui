@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Box, Grid } from "@mui/material";
+import { Grid } from "@mui/material";
 import NavBar from "./components/NavBar";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
 import "@fontsource/fira-sans";
 import Controller from "./controllers/Controller";
 
-const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
+const ColorModeContext = React.createContext({ toggleColorMode: () => { } });
 
 function App() {
   const [mode, setMode] = React.useState<"light" | "dark">("light");

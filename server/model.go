@@ -54,10 +54,10 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-// Server - for managing db sessions with unique accesskey for each open session from UI
+// Server - for managing db sessions with unique dbKey for each open session from UI
 type Session struct {
-	AccessKey string
-	FileName  string
-	DBType    string
-	DB        database.DB
+	dbKey    string
+	FileName string
+	DBType   string
+	DB       database.DB
 }

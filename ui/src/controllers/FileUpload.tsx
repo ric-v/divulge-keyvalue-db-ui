@@ -53,6 +53,7 @@ const FileUpload = ({ setDbname, setDbkey, setStatus }: FileUploadProps) => {
         setDbname(resp.data.filename);
         setDbkey(resp.data.dbkey);
         setStatus("connected");
+        localStorage.setItem("dbkey", resp.data.dbkey);
       })
       .catch((err) => {
         enqueueSnackbar(err.response.data.message, {
@@ -84,6 +85,7 @@ const FileUpload = ({ setDbname, setDbkey, setStatus }: FileUploadProps) => {
             <input
               type="file"
               name="file-choose"
+              placeholder="Choose file"
               onChange={(e) => {
                 e.preventDefault();
                 if (e.target.files && e.target.files.length > 0) {

@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { Box, Pagination } from "@mui/material";
-import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {
   GridToolbarContainer,
   GridToolbarFilterButton,
@@ -13,6 +12,8 @@ import {
   gridPageSelector,
   gridPageCountSelector,
 } from "@mui/x-data-grid";
+import { Fab, Tooltip } from "@mui/material";
+import AddIcon from "@material-ui/icons/Add";
 
 export const CustomToolbar = () => {
   return (
@@ -112,7 +113,6 @@ export const CustomFooterStatusComponent = (
   const apiRef = useGridApiContext();
   const page = useGridSelector(apiRef, gridPageSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
-  // const [status, setStatus] = useState("disconnected");
 
   return (
     <Box
@@ -122,16 +122,35 @@ export const CustomFooterStatusComponent = (
         flexDirection: "row",
         justifyContent: "space-between",
       }}
+      alignItems={["center"]}
     >
-      <Box>
-        <FiberManualRecordIcon
-          fontSize="small"
-          sx={{
-            mr: 2,
-            color: props.status === "connected" ? "#4caf50" : "#d9182e",
-          }}
-        />
-        Status {props.status}
+      <Box
+        component="form"
+        sx={{
+          "& > :not(style)": { m: 1 },
+          display: "flex",
+          flexDirection: "row",
+        }}
+        justifyContent="flex-start"
+        alignItems={["center"]}
+      >
+        <Tooltip title="Add New Entry" placement="top">
+          <Fab variant="extended" color="primary">
+            <AddIcon
+            // onClick={() =>
+            //   props.setStatus((current: string) => {
+            //     closedbConnection(
+            //       props.dbkey,
+            //       props.setDbname,
+            //       props.setDbkey
+            //     );
+            //     return current === "connected" ? "disconnected" : "connected";
+            //   })
+            // }
+            />
+            {/* {props.status === "connected" ? "Disconnect" : "Connect"} */}
+          </Fab>
+        </Tooltip>
       </Box>
       <Pagination
         color="secondary"

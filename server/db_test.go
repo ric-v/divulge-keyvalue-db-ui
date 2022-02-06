@@ -234,10 +234,10 @@ func Test_newFile(t *testing.T) {
 
 func Test_listKeyValue(t *testing.T) {
 	type args struct {
-		accesskey string
-		dbtype    string
-		bucket    string
-		file      string
+		dbKey  string
+		dbtype string
+		bucket string
+		file   string
 	}
 	tests := []struct {
 		name           string
@@ -248,21 +248,21 @@ func Test_listKeyValue(t *testing.T) {
 		{
 			name: "bolt db",
 			args: args{
-				accesskey: "test",
-				dbtype:    database.BOLT_DB,
-				bucket:    "test-bucket",
-				file:      "test.db",
+				dbKey:  "test",
+				dbtype: database.BOLT_DB,
+				bucket: "test-bucket",
+				file:   "test.db",
 			},
 			wantStatusCode: http.StatusInternalServerError,
 			wantErr:        false,
 		},
 		{
-			name: "bolt db - invalid accesskey",
+			name: "bolt db - invalid dbKey",
 			args: args{
-				accesskey: "test-invalid",
-				dbtype:    database.BOLT_DB,
-				bucket:    "test-bucket",
-				file:      "test.db",
+				dbKey:  "test-invalid",
+				dbtype: database.BOLT_DB,
+				bucket: "test-bucket",
+				file:   "test.db",
 			},
 			wantStatusCode: http.StatusBadRequest,
 			wantErr:        false,
@@ -270,19 +270,19 @@ func Test_listKeyValue(t *testing.T) {
 		{
 			name: "bunt db",
 			args: args{
-				accesskey: "test",
-				dbtype:    database.BUNT_DB,
-				file:      "test.db",
+				dbKey:  "test",
+				dbtype: database.BUNT_DB,
+				file:   "test.db",
 			},
 			wantStatusCode: http.StatusOK,
 			wantErr:        false,
 		},
 		{
-			name: "bunt db - invalid accesskey",
+			name: "bunt db - invalid dbKey",
 			args: args{
-				accesskey: "test-invalid",
-				dbtype:    database.BUNT_DB,
-				file:      "test.db",
+				dbKey:  "test-invalid",
+				dbtype: database.BUNT_DB,
+				file:   "test.db",
 			},
 			wantStatusCode: http.StatusBadRequest,
 			wantErr:        false,
@@ -296,7 +296,7 @@ func Test_listKeyValue(t *testing.T) {
 			testDB.Add("test-key", "test-value")
 			defer testDB.CloseDB()
 
-			session.Store("test", Session{tt.args.accesskey, tt.args.file, tt.args.file, testDB})
+			session.Store("test", Session{tt.args.dbKey, tt.args.file, tt.args.file, testDB})
 
 			req, err := http.NewRequest("POST", "http://api/v1/db", nil)
 			if err != nil {
@@ -306,7 +306,7 @@ func Test_listKeyValue(t *testing.T) {
 
 			// set query params
 			q := req.URL.Query()
-			q.Add("accesskey", tt.args.accesskey)
+			q.Add("dbKey", tt.args.dbKey)
 			q.Add("dbtype", tt.args.dbtype)
 			q.Add("bucket", tt.args.bucket)
 			q.Add("file", tt.args.file)

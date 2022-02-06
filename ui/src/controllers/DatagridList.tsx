@@ -1,4 +1,4 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import http from "../services/axios-common";
@@ -7,7 +7,7 @@ import {
   CustomNoRowsOverlay,
   CustomFooterStatusComponent,
 } from "../components/DatagridComponents";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 
 type Props = {
   dbkey: string;
@@ -21,31 +21,9 @@ type Props = {
 
 export default function FixedSizeGrid(props: Props) {
   const data = {
-    columns: [
-      {
-        field: "id",
-        hide: true,
-      },
-      {
-        field: "key",
-        headerName: "KEY",
-        flex: 1,
-      },
-      {
-        field: "value",
-        headerName: "VALUE",
-        flex: 3,
-        editable: true,
-      },
-    ],
+    columns: [],
     rows: [],
-    initialState: {
-      columns: {
-        columnVisibilityModel: {
-          id: false,
-        },
-      },
-    },
+    initialState: {},
   };
 
   const [dataGrid, setDataGrid] = useState(data);
@@ -53,13 +31,7 @@ export default function FixedSizeGrid(props: Props) {
 
   useEffect(() => {
     http
-      .get(
-        "/api/v1/db/?accesskey=" +
-          props.dbkey +
-          "&filename=" +
-          props.dbname +
-          "&dbtype=buntdb"
-      )
+      .get("/api/v1/db/?dbkey=" + props.dbkey)
       .then((resp) => {
         enqueueSnackbar("Updating tables", {
           key: "load",
@@ -83,39 +55,6 @@ export default function FixedSizeGrid(props: Props) {
       });
   }, []);
 
-  const closedbConnection = (
-    dbkey: string,
-    setDbname: Dispatch<SetStateAction<string>>,
-    setDbkey: Dispatch<SetStateAction<string>>
-  ) => {
-    http
-      .delete("/api/v1/clear?accesskey=" + dbkey)
-      .then((resp) => {
-        enqueueSnackbar("Database connection closed", {
-          key: "success",
-          variant: "success",
-          draggable: true,
-          onClick: () => {
-            closeSnackbar("success");
-          },
-        });
-        props.setStatus("disconnected");
-        setDbname("");
-        setDbkey("");
-        props.setLoadView(false);
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.response.data.message, {
-          key: "error",
-          variant: "error",
-          draggable: true,
-          onClick: () => {
-            closeSnackbar("error");
-          },
-        });
-      });
-  };
-
   return (
     <Box sx={{ width: 1 }}>
       <Box sx={{ height: 720, width: 1, mb: 2 }}>
@@ -135,18 +74,6 @@ export default function FixedSizeGrid(props: Props) {
           {...dataGrid}
         />
       </Box>
-      <Button
-        color="primary"
-        variant="contained"
-        onClick={() =>
-          props.setStatus((current: string) => {
-            closedbConnection(props.dbkey, props.setDbname, props.setDbkey);
-            return current === "connected" ? "disconnected" : "connected";
-          })
-        }
-      >
-        {props.status === "connected" ? "Disconnect" : "Connect"}
-      </Button>
     </Box>
   );
 }
