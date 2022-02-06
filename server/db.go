@@ -16,7 +16,7 @@ import (
 
 var session sync.Map
 
-// uploadFile is the handler for the POST /api/v1/db/upload endpoint.
+// uploadFile is the handler for the POST /api/v1/upload endpoint.
 // Opens the boltdb file and returns the file handle.
 func uploadFile(ctx *fasthttp.RequestCtx) {
 
@@ -28,14 +28,7 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 	files, err := ctx.FormFile("file")
 	if err != nil {
 		log.Println(err)
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		json.NewEncoder(ctx).Encode(apiResponse{
-			Message: "Error reading from form-data: " + err.Error(),
-			Error: []errorResponse{{
-				Message: err.Error(),
-				Code:    fasthttp.StatusBadRequest,
-			}},
-		})
+		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
 		return
 	}
 	log.Println(files.Filename, files.Size)
@@ -52,14 +45,7 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 	err = fasthttp.SaveMultipartFile(files, "temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename)
 	if err != nil {
 		log.Println(err)
-		ctx.SetStatusCode(fasthttp.StatusBadRequest)
-		json.NewEncoder(ctx).Encode(apiResponse{
-			Message: "Error getting db file from form: " + err.Error(),
-			Error: []errorResponse{{
-				Message: err.Error(),
-				Code:    fasthttp.StatusBadRequest,
-			}},
-		})
+		ctx.Error("Error getting file: "+err.Error(), fasthttp.StatusBadRequest)
 		os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
 		return
 	}
@@ -69,14 +55,7 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 	db, err := database.NewDB("temp"+string(os.PathSeparator)+accessKey+string(os.PathSeparator)+files.Filename, dbType)
 	if err != nil {
 		log.Println(err)
-		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-		json.NewEncoder(ctx).Encode(apiResponse{
-			Message: "Error creating boltdb file: " + err.Error(),
-			Error: []errorResponse{{
-				Message: err.Error(),
-				Code:    fasthttp.StatusInternalServerError,
-			}},
-		})
+		ctx.Error("Error creating new file: "+err.Error(), fasthttp.StatusInternalServerError)
 		os.RemoveAll("temp" + string(os.PathSeparator) + accessKey)
 		return
 	}
@@ -94,7 +73,7 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 	})
 }
 
-// newFile is the handler for the POST /api/v1/db/create endpoint.
+// newFile is the handler for the POST /api/v1/new endpoint.
 // Creates a new boltdb file.
 func newFile(ctx *fasthttp.RequestCtx) {
 
