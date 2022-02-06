@@ -255,17 +255,3 @@ func TestBoltDB_List(t *testing.T) {
 	db.CloseDB()
 	os.Remove("test.db")
 }
-
-func TestBoltDB_CloseDB(t *testing.T) {
-	tests := []struct {
-		name string
-		db   *BoltDB
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.db.CloseDB()
-		})
-	}
-}

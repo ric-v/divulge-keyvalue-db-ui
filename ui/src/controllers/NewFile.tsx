@@ -50,6 +50,7 @@ const NewFile = ({
         setDbname(resp.data.filename);
         setDbkey(resp.data.dbkey);
         setStatus("connected");
+        localStorage.setItem("dbkey", resp.data.dbkey);
       })
       .catch((err) => {
         enqueueSnackbar(err.response.data.message, {

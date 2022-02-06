@@ -7,48 +7,52 @@
 [![CodeQL](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml/badge.svg?branch=main)](https://github.com/ric-v/divulge-keyvalue-db-ui/actions/workflows/codeql-analysis.yml)
 [![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ric-v/divulge-keyvalue-db-ui)](https://goreportcard.com/report/github.com/ric-v/divulge-keyvalue-db-ui)
+[![CodeFactor](https://www.codefactor.io/repository/github/ric-v/divulge-keyvalue-db-ui/badge)](https://www.codefactor.io/repository/github/ric-v/divulge-keyvalue-db-ui)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ric-v_divulge-keyvalue-db-ui&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ric-v_divulge-keyvalue-db-ui)
 
 </div>
 
 ---
 
-Simple DB CRUD operations service. Supports Key-Value pair file based Databases. Upload the DB create a local copy and modify/view data and download the updates.
+Simple DB CRUD operations service. Supports some golang Key-Value pair file based Databases. Upload the DB create a local copy and modify/view data and download the updates.
 
 <!-- ![in-action-gif](https://github.com/ric-v/divulge-keyvalue-db-ui/blob/main/public/assets/screenshots/in-action.gif) -->
 
 ## Features
 
-- Upload existing DB
-- View Key-Value pairs
-- Add new Key-Value pair (WIP)
-- View Buckets in boltDB (WIP)
-- Add / remove bucket (WIP)
-- Move/Copy Key-Value pair under a bucket to another bucket (WIP)
+- [x] ~~Upload existing DB~~
+- [x] ~~View Key-Value pairs~~
+- [ ] Add new Key-Value pair
+- [ ] Remove Key-Value pair
+- [ ] Update Key-Value pair
+- [ ] Download updated file
+- [ ] View Buckets in boltDB
+- [ ] Add / remove bucket
+- [ ] Move/Copy Key-Value pair under a bucket to another bucket
 
 ## Usage
 
 Download the latest [release from here](https://github.com/ric-v/divulge-keyvalue-db-ui/releases)
 
-### windows
+- ### windows
 
-- Unzip / Untar the release
-- Open the folder
-- Run the .exe file (in the pop up screen, click more info > Run anyway > allow firewall access if the pop-up comes)
-- The service will be available at <http://localhost:8080/>
+  - Unzip / Untar the release
+  - Open the folder
+  - Run the .exe file (in the pop up screen, click more info > Run anyway > allow firewall access if the pop-up comes)
+  - The service will be available at <http://localhost:8080/>
 
-### linux
+- ### linux
 
-- Unzip / Untar the release
-- Open the folder in terminal
-- Run commands:
+  - Unzip / Untar the release
+  - Open the folder in terminal
+  - Run commands:
 
-```bash
-chmod +x divulge-viewer-*-amd64
-./divulge-viewer-*-amd64
-```
+  ```bash
+  chmod +x divulge-viewer-*-amd64
+  ./divulge-viewer-*-amd64
+  ```
 
-- The service will be available at <http://localhost:8080/>
+  - The service will be available at <http://localhost:8080/>
 
 ## Supported DB
 
