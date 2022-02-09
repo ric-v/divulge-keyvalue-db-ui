@@ -28,20 +28,23 @@ export default function FixedSizeGrid(props: Props) {
 
   const [dataGrid, setDataGrid] = useState(data);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [updated, setUpdated] = useState(false);
 
   useEffect(() => {
     http
       .get("/api/v1/db/?dbkey=" + props.dbkey)
       .then((resp) => {
+        const now = new Date().getTime().toString();
         enqueueSnackbar("Updating tables", {
-          key: "load",
+          key: now,
           variant: "info",
           onClick: () => {
-            closeSnackbar("load");
+            closeSnackbar(now);
           },
         });
         console.log("setting data", resp.data);
         setDataGrid(resp.data.data);
+        setUpdated(false);
       })
       .catch((err) => {
         enqueueSnackbar(err.response.data.message, {
@@ -53,7 +56,8 @@ export default function FixedSizeGrid(props: Props) {
           },
         });
       });
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updated]);
 
   return (
     <Box sx={{ width: 1 }}>
@@ -68,7 +72,7 @@ export default function FixedSizeGrid(props: Props) {
             Footer: CustomFooterStatusComponent,
           }}
           componentsProps={{
-            footer: { status: props.status },
+            footer: { status: props.status, setUpdated: setUpdated },
           }}
           pageSize={15}
           {...dataGrid}
