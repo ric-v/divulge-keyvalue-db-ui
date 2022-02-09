@@ -23,6 +23,7 @@ func Serve(port string, debug bool) {
 
 	// create a new router
 	r := router.New()
+	r.HandleOPTIONS = true
 
 	// /api/v1/ routes
 	v1 := r.Group("/api/v1")
@@ -34,6 +35,7 @@ func Serve(port string, debug bool) {
 		// create new database file
 		v1.POST("/new", newFile)
 
+		// load existing file from browser cache
 		v1.POST("/load", loadFile)
 
 		// close the boltdb file and remove the entries
@@ -100,5 +102,6 @@ func Serve(port string, debug bool) {
 		LogAllErrors:       true,
 	}
 	// serve the handlers on the router
+	log.Println("starting server on port:", port)
 	log.Fatal(server.ListenAndServe(":" + port))
 }

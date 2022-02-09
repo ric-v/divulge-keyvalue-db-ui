@@ -12,8 +12,7 @@ import {
   gridPageSelector,
   gridPageCountSelector,
 } from "@mui/x-data-grid";
-import { Fab, Tooltip } from "@mui/material";
-import AddIcon from "@material-ui/icons/Add";
+import AddEntryModal from "./AddEntryModal";
 
 export const CustomToolbar = () => {
   return (
@@ -105,11 +104,13 @@ export const CustomNoRowsOverlay = () => {
 
 type CustomFooterStatusComponentProps = {
   status: string;
+  setUpdated: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const CustomFooterStatusComponent = (
-  props: CustomFooterStatusComponentProps
-) => {
+export const CustomFooterStatusComponent = ({
+  status,
+  setUpdated,
+}: CustomFooterStatusComponentProps) => {
   const apiRef = useGridApiContext();
   const page = useGridSelector(apiRef, gridPageSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
@@ -124,34 +125,7 @@ export const CustomFooterStatusComponent = (
       }}
       alignItems={["center"]}
     >
-      <Box
-        component="form"
-        sx={{
-          "& > :not(style)": { m: 1 },
-          display: "flex",
-          flexDirection: "row",
-        }}
-        justifyContent="flex-start"
-        alignItems={["center"]}
-      >
-        <Tooltip title="Add New Entry" placement="top">
-          <Fab variant="extended" color="primary">
-            <AddIcon
-            // onClick={() =>
-            //   props.setStatus((current: string) => {
-            //     closedbConnection(
-            //       props.dbkey,
-            //       props.setDbname,
-            //       props.setDbkey
-            //     );
-            //     return current === "connected" ? "disconnected" : "connected";
-            //   })
-            // }
-            />
-            {/* {props.status === "connected" ? "Disconnect" : "Connect"} */}
-          </Fab>
-        </Tooltip>
-      </Box>
+      <AddEntryModal setUpdated={setUpdated} />
       <Pagination
         color="secondary"
         count={pageCount}

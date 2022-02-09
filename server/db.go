@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/ric-v/divulge-keyvalue-db-ui/database"
-	boltdb "github.com/ric-v/golang-key-value-db-browser/bolt-db"
 	"github.com/valyala/fasthttp"
 )
 
@@ -157,6 +156,7 @@ func loadFile(ctx *fasthttp.RequestCtx) {
 			ctx.Error("Error reading db folder: "+err.Error(), fasthttp.StatusInternalServerError)
 			return
 		}
+		log.Println("dbTypes:", dbTypes)
 
 		// iterate over files
 		for _, dbType := range dbTypes {
@@ -168,9 +168,11 @@ func loadFile(ctx *fasthttp.RequestCtx) {
 				ctx.Error("Error reading db folder: "+err.Error(), fasthttp.StatusInternalServerError)
 				return
 			}
+			log.Println("dbKeys:", dbKeys)
 
 			// iterate over files
 			for _, dbkey := range dbKeys {
+				log.Println("dbkey:", dbkey.Name(), " | dbKey:", dbkey)
 
 				if dbkey.Name() == dbKey {
 
@@ -185,6 +187,8 @@ func loadFile(ctx *fasthttp.RequestCtx) {
 					// get the file name
 					file := files[0].Name()
 					userSession = Session{dbKey, file, dbType.Name(), nil}
+					log.Println("userSession: ", userSession)
+					session.Store(dbKey, userSession)
 				}
 			}
 		}
@@ -414,7 +418,7 @@ func insertKeyValue(ctx *fasthttp.RequestCtx) {
 	}
 
 	// get the dbKey from params
-	dbKey := string(ctx.UserValue("dbKey").(string))
+	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
 	log.Println("dbKey:", dbKey)
 
 	// load the db from user session
@@ -434,32 +438,13 @@ func insertKeyValue(ctx *fasthttp.RequestCtx) {
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 		return
 	}
-	fmt.Println("data:", data)
 
-	switch sessionInfo.DBType {
-
-	case database.BOLT_DB:
-
-		// get the DB type from params
-		bucket := string(ctx.QueryArgs().Peek("bucket"))
-		log.Println("bucket:", bucket)
-
-		// open the boltdb file from temp dir
-		db, err := boltdb.New("temp" + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// add the key-value pair to the boltdb file
-		err = db.Add([]byte(bucket), []byte(data.Key), []byte(data.Value))
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
+	// add new entry to DB
+	err = sessionInfo.DB.Add(data.Key, data.Value)
+	if err != nil {
+		log.Println(err)
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return
 	}
 
 	// return success message to UI
@@ -497,22 +482,6 @@ func insertBucket(ctx *fasthttp.RequestCtx) {
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
 		log.Println("bucket:", bucket)
 
-		// open the boltdb file from temp dir
-		db, err := boltdb.New("temp" + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// remove the bucket from the boltdb file
-		err = db.AddBucket([]byte(bucket))
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
 	}
 
 	// return success message to UI
@@ -550,22 +519,6 @@ func deleteBucket(ctx *fasthttp.RequestCtx) {
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
 		log.Println("bucket:", bucket)
 
-		// open the boltdb file from temp dir
-		db, err := boltdb.New("temp" + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// remove the bucket from the boltdb file
-		err = db.RemoveBucket([]byte(bucket))
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
 	}
 
 	// return success message to UI
@@ -608,22 +561,6 @@ func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
 		log.Println("bucket:", bucket)
 
-		// open the boltdb file from temp dir
-		db, err := boltdb.New("temp" + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// delete the key from the boltdb file
-		err = db.Delete([]byte(bucket), []byte(key))
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
 	}
 
 	// return success message to UI
@@ -675,22 +612,6 @@ func updateKeyValue(ctx *fasthttp.RequestCtx) {
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
 		log.Println("bucket:", bucket)
 
-		// open the boltdb file from temp dir
-		db, err := boltdb.New("temp" + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		defer db.Close()
-
-		// update the key in the boltdb file
-		err = db.Update([]byte(bucket), []byte(key), []byte(value))
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
 	}
 
 	// return success message to UI
