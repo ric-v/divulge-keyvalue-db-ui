@@ -61,3 +61,9 @@ type Session struct {
 	DBType   string
 	DB       database.DB
 }
+
+// NewEntry - for creating new entry in the database
+type NewEntry struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}

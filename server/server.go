@@ -61,7 +61,7 @@ func Serve(port string, debug bool) {
 			dbroutes.PUT("/{key}", updateKeyValue)
 
 			// delete the boltdb file
-			dbroutes.DELETE("/{key}", deleteKeyValue)
+			dbroutes.DELETE("/", deleteKeyValue)
 		}
 
 		// /api/v1/bucket routes

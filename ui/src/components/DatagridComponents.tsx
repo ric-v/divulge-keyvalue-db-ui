@@ -1,5 +1,15 @@
 import styled from "@emotion/styled";
-import { Box, Pagination } from "@mui/material";
+import { Delete } from "@material-ui/icons";
+import {
+  Box,
+  Button,
+  Fab,
+  Pagination,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useSnackbar } from "notistack";
+import http from "../services/axios-common";
 import {
   GridToolbarContainer,
   GridToolbarFilterButton,
@@ -105,36 +115,91 @@ export const CustomNoRowsOverlay = () => {
 type CustomFooterStatusComponentProps = {
   status: string;
   setUpdated: React.Dispatch<React.SetStateAction<boolean>>;
+  dbkey: string;
+  showDelete: boolean;
+  keys: any[];
 };
 
 export const CustomFooterStatusComponent = ({
   status,
   setUpdated,
+  dbkey,
+  showDelete,
+  keys,
 }: CustomFooterStatusComponentProps) => {
   const apiRef = useGridApiContext();
   const page = useGridSelector(apiRef, gridPageSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  // handles delete for keys in db/bucket
+  const handleDelete = (keys: any[]) => {
+    http
+      .delete("/api/v1/db/?dbkey=" + dbkey, { data: { keys: keys } })
+      .then((resp) => {
+        enqueueSnackbar(resp.data.message, {
+          key: "Deleted",
+          variant: "success",
+          onClick: () => {
+            closeSnackbar("Deleted");
+          },
+        });
+        setUpdated(true);
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.response.data.message, {
+          key: "error",
+          variant: "error",
+          onClick: () => {
+            closeSnackbar("error");
+          },
+        });
+      });
+  };
 
   return (
-    <Box
-      sx={{
-        padding: "10px",
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-      }}
-      alignItems={["center"]}
-    >
-      <AddEntryModal setUpdated={setUpdated} />
-      <Pagination
-        color="secondary"
-        count={pageCount}
-        page={page + 1}
-        variant="text"
-        size="medium"
-        shape="rounded"
-        onChange={(event, value) => apiRef.current.setPage(value - 1)}
-      />
-    </Box>
+    <>
+      <Box
+        sx={{
+          padding: "10px",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+        alignItems={["center"]}
+      >
+        <Box>
+          <AddEntryModal setUpdated={setUpdated} />
+
+          {showDelete && (
+            <Tooltip title="Remove Entries" placement="top">
+              <Fab
+                variant="extended"
+                color="secondary"
+                sx={{
+                  marginLeft: "10px",
+                }}
+                onClick={() => handleDelete(keys)}
+              >
+                <Delete color="error" />
+                <Typography ml={1} color="error">
+                  Delete
+                </Typography>
+              </Fab>
+            </Tooltip>
+          )}
+        </Box>
+        <Pagination
+          color="secondary"
+          count={pageCount}
+          page={page + 1}
+          variant="text"
+          size="medium"
+          shape="rounded"
+          onChange={(event, value) => apiRef.current.setPage(value - 1)}
+        />
+      </Box>
+      <Typography color={"gray"} variant="caption">*NOTE: Double click an entry to update the value</Typography>
+    </>
   );
 };

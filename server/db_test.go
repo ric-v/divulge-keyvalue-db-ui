@@ -296,7 +296,7 @@ func Test_listKeyValue(t *testing.T) {
 			testDB.Add("test-key", "test-value")
 			defer testDB.CloseDB()
 
-			session.Store("test", Session{tt.args.dbKey, tt.args.file, tt.args.file, testDB})
+			session.Store("test", Session{"test", tt.args.file, tt.args.file, testDB})
 
 			req, err := http.NewRequest("POST", "http://api/v1/db", nil)
 			if err != nil {
@@ -306,10 +306,7 @@ func Test_listKeyValue(t *testing.T) {
 
 			// set query params
 			q := req.URL.Query()
-			q.Add("dbKey", tt.args.dbKey)
-			q.Add("dbtype", tt.args.dbtype)
-			q.Add("bucket", tt.args.bucket)
-			q.Add("file", tt.args.file)
+			q.Add("dbkey", tt.args.dbKey)
 			req.URL.RawQuery = q.Encode()
 
 			// create a new client

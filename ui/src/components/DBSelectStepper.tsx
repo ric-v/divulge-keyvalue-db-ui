@@ -105,7 +105,6 @@ export default function VerticalLinearStepper(
                 checked={checked}
                 onChange={handleChange}
                 inputProps={{ "aria-label": "controlled" }}
-                disabled
               />
             }
             label={checked ? "Create new database" : "Upload existing database"}
