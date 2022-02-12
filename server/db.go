@@ -2,10 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
-	"net/url"
 	"os"
 	"sync"
 
@@ -148,101 +149,20 @@ func loadFile(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-
-		// get the file name under folder
-		dbTypes, err := ioutil.ReadDir("temp" + string(os.PathSeparator))
-		if err != nil {
-			log.Println(err)
-			ctx.Error("Error reading db folder: "+err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-		log.Println("dbTypes:", dbTypes)
-
-		// iterate over files
-		for _, dbType := range dbTypes {
-
-			// get the file name under folder
-			dbKeys, err := ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator))
-			if err != nil {
-				log.Println(err)
-				ctx.Error("Error reading db folder: "+err.Error(), fasthttp.StatusInternalServerError)
-				return
-			}
-			log.Println("dbKeys:", dbKeys)
-
-			// iterate over files
-			for _, dbkey := range dbKeys {
-				log.Println("dbkey:", dbkey.Name(), " | dbKey:", dbkey)
-
-				if dbkey.Name() == dbKey {
-
-					// get the file name under folder
-					files, err := ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator) + dbKey)
-					if err != nil {
-						log.Println(err)
-						ctx.Error("Error reading db folder: "+err.Error(), fasthttp.StatusInternalServerError)
-						return
-					}
-
-					// get the file name
-					file := files[0].Name()
-					userSession = Session{dbKey, file, dbType.Name(), nil}
-					log.Println("userSession: ", userSession)
-					session.Store(dbKey, userSession)
-				}
-			}
-		}
-
-		// if user session is still nil, return error
-		if userSession == nil {
-			log.Println("invalid dbKey")
-			ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-			return
-		}
-	}
-	sessionInfo := userSession.(Session)
-	log.Println("sessionInfo : ", sessionInfo)
-
-	// switch on db type
-	switch sessionInfo.DBType {
-
-	case database.BOLT_DB:
-
-		// create the new boltdb file in the temp dir
-		log.Println("creating new boltdb file:", "temp"+string(os.PathSeparator)+sessionInfo.DBType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+sessionInfo.FileName)
-		db, err := database.NewDB("temp"+string(os.PathSeparator)+sessionInfo.DBType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+sessionInfo.FileName, sessionInfo.DBType)
-		if err != nil {
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
 			log.Println(err)
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			os.RemoveAll("temp" + string(os.PathSeparator) + dbKey)
 			return
 		}
-		defer db.CloseDB()
-
-		// store the db access in the session
-		session.Store(dbKey, Session{dbKey, sessionInfo.FileName, sessionInfo.DBType, db})
-
-	case database.BUNT_DB:
-
-		// create the new buntdb file in the temp dir
-		log.Println("creating new buntdb file:", "temp"+string(os.PathSeparator)+sessionInfo.DBType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+sessionInfo.FileName)
-		db, err := database.NewDB("temp"+string(os.PathSeparator)+sessionInfo.DBType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+sessionInfo.FileName, sessionInfo.DBType)
-		if err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			os.RemoveAll("temp" + string(os.PathSeparator) + dbKey)
-			return
-		}
-
-		// store the db access in the session
-		session.Store(dbKey, Session{dbKey, sessionInfo.FileName, sessionInfo.DBType, db})
 	}
 
 	// return success message to UI
 	json.NewEncoder(ctx).Encode(apiResponse{
 		DBKey:    dbKey,
-		FileName: sessionInfo.FileName,
-		DBType:   sessionInfo.DBType,
+		FileName: userSession.(Session).FileName,
+		DBType:   userSession.(Session).DBType,
 		Message:  "Successfully created boltdb file: " + dbKey,
 		Error:    nil,
 	})
@@ -260,9 +180,13 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 
@@ -385,10 +309,15 @@ func removeFile(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
+	log.Println("userSession:", userSession)
 	userSession.(Session).DB.CloseDB()
 	dbType := userSession.(Session).DBType
 	session.Delete(dbKey)
@@ -410,12 +339,8 @@ func removeFile(ctx *fasthttp.RequestCtx) {
 	})
 }
 
+// insertKeyValue is the handler for the POST /api/v1/db/dbKey/file endpoint.
 func insertKeyValue(ctx *fasthttp.RequestCtx) {
-
-	type NewEntry struct {
-		Key   string `json:"key"`
-		Value string `json:"value"`
-	}
 
 	// get the dbKey from params
 	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
@@ -424,9 +349,13 @@ func insertKeyValue(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 
@@ -468,9 +397,13 @@ func insertBucket(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 
@@ -505,9 +438,13 @@ func deleteBucket(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 
@@ -535,23 +472,36 @@ func deleteBucket(ctx *fasthttp.RequestCtx) {
 // Removes a key from the boltdb file.
 func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 
-	// get the dbKey from params
-	dbKey := string(ctx.UserValue("dbKey").(string))
-	log.Println("dbKey:", dbKey)
+	type deleteKeys struct {
+		Keys []string `json:"keys"`
+	}
 
-	// get the key from params
-	key := string(ctx.UserValue("key").(string))
-	key, _ = url.QueryUnescape(key)
-	log.Println("key:", key)
+	// get the dbKey from params
+	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
+	log.Println("dbKey:", dbKey)
 
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
+
+	// get the value from payload
+	var keys deleteKeys
+	err := json.Unmarshal(ctx.PostBody(), &keys)
+	if err != nil {
+		log.Println(err)
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return
+	}
+	log.Println("keys:", keys)
 
 	switch sessionInfo.DBType {
 
@@ -563,12 +513,24 @@ func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 
 	}
 
+	// for each selected keys delete from DB
+	for _, key := range keys.Keys {
+
+		// delete key from DB
+		err = sessionInfo.DB.Delete(key)
+		if err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
+	}
+
 	// return success message to UI
 	json.NewEncoder(ctx).Encode(apiResponse{
 		DBKey:    dbKey,
 		FileName: sessionInfo.FileName,
 		DBType:   sessionInfo.DBType,
-		Message:  "Successfully deleted key: " + key,
+		Message:  "Successfully deleted keys from DB",
 		Error:    nil,
 	})
 }
@@ -578,7 +540,7 @@ func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 func updateKeyValue(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from params
-	dbKey := string(ctx.UserValue("dbKey").(string))
+	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
 	log.Println("dbKey:", dbKey)
 
 	// get the key from params
@@ -588,21 +550,25 @@ func updateKeyValue(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 
 	// get the value from payload
-	var value string
-	err := json.Unmarshal(ctx.PostBody(), &value)
+	var data NewEntry
+	err := json.Unmarshal(ctx.PostBody(), &data)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 		return
 	}
-	log.Println("value:", value)
+	log.Println("data:", data)
 
 	switch sessionInfo.DBType {
 
@@ -612,6 +578,14 @@ func updateKeyValue(ctx *fasthttp.RequestCtx) {
 		bucket := string(ctx.QueryArgs().Peek("bucket"))
 		log.Println("bucket:", bucket)
 
+	}
+
+	// add new entry to DB
+	err = sessionInfo.DB.Add(key, data.Value)
+	if err != nil {
+		log.Println(err)
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return
 	}
 
 	// return success message to UI
@@ -635,13 +609,84 @@ func downloadFile(ctx *fasthttp.RequestCtx) {
 	// load the db from user session
 	userSession, valid := session.Load(dbKey)
 	if !valid {
-		log.Println("invalid dbKey")
-		ctx.Error("invalid dbKey", fasthttp.StatusBadRequest)
-		return
+		var err error
+		// try restoring user session
+		if userSession, err = restoreSession(dbKey); err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
 	}
 	sessionInfo := userSession.(Session)
 	sessionInfo.DB.CloseDB()
 
 	// return the file to the UI
 	ctx.SendFile("temp" + string(os.PathSeparator) + sessionInfo.DBType + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
+}
+
+// restoreSession restores the user session from the boltdb / buntdb file if it exists on client
+func restoreSession(dbKey string) (userSession Session, err error) {
+
+	// get the file name under folder
+	dbTypes, err := ioutil.ReadDir("temp" + string(os.PathSeparator))
+	if err != nil {
+		log.Println(err)
+		err = errors.New("Error reading db folder: " + err.Error())
+		return
+	}
+	log.Println("dbTypes:", dbTypes)
+
+	// iterate over files
+	for _, dbType := range dbTypes {
+
+		var dbKeys []fs.FileInfo
+		// get the file name under folder
+		dbKeys, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator))
+		if err != nil {
+			log.Println(err)
+			err = errors.New("Error reading db folder: " + err.Error())
+			return
+		}
+		log.Println("dbKeys:", dbKeys)
+
+		// iterate over files
+		for _, dbkey := range dbKeys {
+			log.Println("dbkey:", dbkey.Name(), " | dbKey:", dbkey)
+
+			if dbkey.Name() == dbKey {
+
+				var files []fs.FileInfo
+				// get the file name under folder
+				files, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator) + dbKey)
+				if err != nil {
+					log.Println(err)
+					err = errors.New("Error reading db folder: " + err.Error())
+					return
+				}
+
+				// get the file name
+				file := files[0].Name()
+
+				userSession.DB, err = database.NewDB("temp"+string(os.PathSeparator)+dbType.Name()+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+file, dbType.Name())
+				if err != nil {
+					log.Println(err)
+					err = errors.New(err.Error())
+					os.RemoveAll("temp" + string(os.PathSeparator) + dbKey)
+					return
+				}
+
+				userSession = Session{dbKey, file, dbType.Name(), userSession.DB}
+				log.Println("userSession: ", userSession)
+				session.Store(dbKey, userSession)
+			}
+		}
+	}
+
+	// if user session is still nil, return error
+	if (userSession == Session{}) || userSession.DB == nil {
+		log.Println("invalid dbKey")
+		err = errors.New("invalid dbKey")
+		return
+	}
+	return
 }

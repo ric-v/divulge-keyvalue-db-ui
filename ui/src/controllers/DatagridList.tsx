@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
 import http from "../services/axios-common";
 import {
@@ -29,19 +29,14 @@ export default function FixedSizeGrid(props: Props) {
   const [dataGrid, setDataGrid] = useState(data);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [updated, setUpdated] = useState(false);
+  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
+  const [keysToDelete, setKeysToDelete] = useState<any[]>([]);
+  const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     http
       .get("/api/v1/db/?dbkey=" + props.dbkey)
       .then((resp) => {
-        const now = new Date().getTime().toString();
-        enqueueSnackbar("Updating tables", {
-          key: now,
-          variant: "info",
-          onClick: () => {
-            closeSnackbar(now);
-          },
-        });
         console.log("setting data", resp.data);
         setDataGrid(resp.data.data);
         setUpdated(false);
@@ -56,13 +51,60 @@ export default function FixedSizeGrid(props: Props) {
           },
         });
       });
+    setSelectionModel([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updated]);
+
+  const handleUpdate = (e: any) => {
+    const newValue = e.value;
+    const key: any = dataGrid.rows[+e.id - 1];
+    console.log("newValue", newValue, "key", key.key);
+    http
+      .put("/api/v1/db/" + key.key + "?dbkey=" + props.dbkey, {
+        value: newValue,
+        key: key.key,
+      })
+      .then((resp) => {
+        enqueueSnackbar(resp.data.message, {
+          key: "updated",
+          variant: "success",
+          onClick: () => {
+            closeSnackbar("updated");
+          },
+        });
+        setUpdated(true);
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.response.data.message, {
+          key: "error",
+          variant: "error",
+          onClick: () => {
+            closeSnackbar("error");
+          },
+        });
+      });
+  };
+
+  const handleSelection = (newSelectionModel: GridSelectionModel) => {
+    setSelectionModel(newSelectionModel);
+    // replace id with key
+    const keys = newSelectionModel.map((item) => {
+      const gridItem: any = dataGrid.rows[+item - 1];
+      return gridItem.key;
+    });
+    setKeysToDelete(keys);
+    console.log("keys", keys);
+
+    if (keys.length > 0) {
+      setShowDelete(true);
+    } else {
+      setShowDelete(false);
+    }
+  };
 
   return (
     <Box sx={{ width: 1 }}>
       <Box sx={{ height: 720, width: 1, mb: 2 }}>
-        {/* @ts-ignore */}
         <DataGrid
           density={"compact"}
           disableColumnMenu={true}
@@ -72,9 +114,22 @@ export default function FixedSizeGrid(props: Props) {
             Footer: CustomFooterStatusComponent,
           }}
           componentsProps={{
-            footer: { status: props.status, setUpdated: setUpdated },
+            footer: {
+              status: props.status,
+              setUpdated: setUpdated,
+              dbkey: props.dbkey,
+              showDelete: showDelete,
+              keys: keysToDelete,
+            },
           }}
           pageSize={15}
+          disableSelectionOnClick
+          checkboxSelection
+          onSelectionModelChange={(newSelectionModel) =>
+            handleSelection(newSelectionModel)
+          }
+          selectionModel={selectionModel}
+          onCellEditCommit={(e) => handleUpdate(e)}
           {...dataGrid}
         />
       </Box>
