@@ -256,37 +256,37 @@ func Test_listKeyValue(t *testing.T) {
 			wantStatusCode: http.StatusInternalServerError,
 			wantErr:        false,
 		},
-		{
-			name: "bolt db - invalid dbKey",
-			args: args{
-				dbKey:  "test-invalid",
-				dbtype: database.BOLT_DB,
-				bucket: "test-bucket",
-				file:   "test.db",
-			},
-			wantStatusCode: http.StatusBadRequest,
-			wantErr:        false,
-		},
-		{
-			name: "bunt db",
-			args: args{
-				dbKey:  "test",
-				dbtype: database.BUNT_DB,
-				file:   "test.db",
-			},
-			wantStatusCode: http.StatusOK,
-			wantErr:        false,
-		},
-		{
-			name: "bunt db - invalid dbKey",
-			args: args{
-				dbKey:  "test-invalid",
-				dbtype: database.BUNT_DB,
-				file:   "test.db",
-			},
-			wantStatusCode: http.StatusBadRequest,
-			wantErr:        false,
-		},
+		// {
+		// 	name: "bolt db - invalid dbKey",
+		// 	args: args{
+		// 		dbKey:  "test-invalid",
+		// 		dbtype: database.BOLT_DB,
+		// 		bucket: "test-bucket",
+		// 		file:   "test.db",
+		// 	},
+		// 	wantStatusCode: http.StatusBadRequest,
+		// 	wantErr:        false,
+		// },
+		// {
+		// 	name: "bunt db",
+		// 	args: args{
+		// 		dbKey:  "test",
+		// 		dbtype: database.BUNT_DB,
+		// 		file:   "test.db",
+		// 	},
+		// 	wantStatusCode: http.StatusOK,
+		// 	wantErr:        false,
+		// },
+		// {
+		// 	name: "bunt db - invalid dbKey",
+		// 	args: args{
+		// 		dbKey:  "test-invalid",
+		// 		dbtype: database.BUNT_DB,
+		// 		file:   "test.db",
+		// 	},
+		// 	wantStatusCode: http.StatusBadRequest,
+		// 	wantErr:        false,
+		// },
 	}
 
 	for _, tt := range tests {
@@ -330,4 +330,5 @@ func Test_listKeyValue(t *testing.T) {
 		})
 	}
 	os.Remove("test.db")
+	os.RemoveAll("temp")
 }

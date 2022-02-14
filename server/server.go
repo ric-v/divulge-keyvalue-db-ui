@@ -54,9 +54,6 @@ func Serve(port string, debug bool) {
 			// read the boltdb file
 			dbroutes.GET("/", listKeyValue)
 
-			// read the boltdb file
-			dbroutes.GET("/{key}", getKeyValue)
-
 			// update the boltdb file
 			dbroutes.PUT("/{key}", updateKeyValue)
 
@@ -69,13 +66,13 @@ func Serve(port string, debug bool) {
 		{
 
 			// add new bucket from boltDB
-			bucketroutes.POST("/", insertBucket)
+			bucketroutes.POST("/", addBucket)
 
 			// list all buckets from boltDB
 			bucketroutes.GET("/", listBuckets)
 
-			// list all buckets from boltDB
-			bucketroutes.GET("/{bucket}", getBucket)
+			// set the bucket for the boltDB
+			bucketroutes.PUT("/{bucket}", setBucket)
 
 			// remove a bucket from boltDB
 			bucketroutes.DELETE("/", deleteBucket)

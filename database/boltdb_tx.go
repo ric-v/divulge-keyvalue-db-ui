@@ -6,15 +6,23 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+type buckets interface {
+	AddBucket(string)
+	SetBucket(string)
+	ListBuckets() ([]string, error)
+	DeleteBucket(string) error
+}
+
 // BoltDB - BoltDB struct
 type BoltDB struct {
 	*bolt.DB
 	bucketName []byte
+	buckets
 }
 
-// BoltBucket godoc - BoltDB Bucket struct
-type BoltBucket struct {
-	*bolt.DB
+// Conn godoc - Returns the underlying database connection
+func (db *BoltDB) Conn() interface{} {
+	return db
 }
 
 // openBolt godoc - Creates a new BoltDB instance
@@ -100,4 +108,44 @@ func (db *BoltDB) List(args ...interface{}) (data []KeyValuePair, err error) {
 		return nil
 	})
 	return
+}
+
+// AddBucket godoc - Adds a new bucket to the database
+func (db *BoltDB) AddBucket(bucketName string) error {
+
+	// add the bucket to the boltdb file
+	return db.Update(func(t *bolt.Tx) error {
+		_, err := t.CreateBucketIfNotExists([]byte(bucketName))
+		return err
+	})
+}
+
+// SetBucket godoc - Sets the current bucket
+func (db *BoltDB) SetBucket(bucketName string) {
+	db.bucketName = []byte(bucketName)
+}
+
+// ListBuckets godoc - Lists all buckets in the database
+func (db *BoltDB) ListBuckets() (data []string, err error) {
+
+	// open the db in view mode
+	err = db.View(func(tx *bolt.Tx) error {
+
+		// iterate on each buckets from the db
+		err = tx.ForEach(func(name []byte, _ *bolt.Bucket) error {
+			data = append(data, string(name))
+			return err
+		})
+		return err
+	})
+	return
+}
+
+// DeleteBucket godoc - Deletes a bucket from the database
+func (db *BoltDB) DeleteBucket(bucketName string) error {
+
+	// delete the bucket from the boltdb file
+	return db.Update(func(tx *bolt.Tx) error {
+		return tx.DeleteBucket([]byte(bucketName))
+	})
 }

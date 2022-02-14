@@ -16,19 +16,12 @@ type KeyValuePair struct {
 
 // DB interface for underlying database packages
 type DB interface {
+	Conn() interface{}
 	Add(string, string, ...interface{}) error
 	CloseDB()
 	Get(key string) (string, error) // TODO: add list all keys
 	Delete(string) error
 	List(args ...interface{}) ([]KeyValuePair, error)
-}
-
-// Buckets interface for underlying bolt DB buckets
-type Buckets interface {
-	Add()
-	Get()
-	List()
-	Delete()
 }
 
 // DBType for identifying underlying database packages

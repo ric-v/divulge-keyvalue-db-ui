@@ -7,7 +7,7 @@ type apiResponse struct {
 	FileName string          `json:"filename"`
 	DBType   string          `json:"dbtype"`
 	Message  string          `json:"message"`
-	Data     Datagrid        `json:"data"`
+	Data     interface{}     `json:"data"`
 	Error    []errorResponse `json:"error"`
 }
 
