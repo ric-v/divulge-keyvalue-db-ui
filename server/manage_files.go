@@ -2,9 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
-	"io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -57,17 +54,12 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	dbSession := Session{dbKey, files.Filename, dbType, db}
 	// store the db access in the session
-	session.Store(dbKey, Session{dbKey, files.Filename, dbType, db})
+	session.Store(dbKey, dbSession)
 
 	// return success message to UI
-	json.NewEncoder(ctx).Encode(apiResponse{
-		DBKey:    dbKey,
-		FileName: files.Filename,
-		DBType:   dbType,
-		Message:  "Successfully opened boltdb file",
-		Error:    nil,
-	})
+	json.NewEncoder(ctx).Encode(generateResponse("Successfully uploaded and verified db", nil, &dbSession))
 }
 
 // newFile is the handler for the POST /api/v1/new endpoint.
@@ -99,75 +91,49 @@ func newFile(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
+	dbSession := Session{dbKey, file, dbType, db}
 	// store the db access in the session
-	session.Store(dbKey, Session{dbKey, file, dbType, db})
+	session.Store(dbKey, dbSession)
 
 	// return success message to UI
-	json.NewEncoder(ctx).Encode(apiResponse{
-		DBKey:    dbKey,
-		FileName: file,
-		DBType:   dbType,
-		Message:  "Successfully created boltdb file: " + dbKey,
-		Error:    nil,
-	})
+	json.NewEncoder(ctx).Encode(generateResponse("Successfully created db", nil, &dbSession))
 }
 
 // loadFile is the handler for the POST /api/v1/load endpoint.
 // Loads previously saved DB from local storage
 func loadFile(ctx *fasthttp.RequestCtx) {
 
-	// get the dbKey from params
-	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
-	log.Println("dbKey:", dbKey)
-
-	// load the db from user session
-	userSession, valid := session.Load(dbKey)
-	if !valid {
-		var err error
-		// try restoring user session
-		if userSession, err = restoreSession(dbKey); err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
+	// get the dbKey from header
+	dbSession, err := sessionHandler(ctx)
+	if err != nil {
+		log.Println(err)
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return
 	}
 
 	// return success message to UI
-	json.NewEncoder(ctx).Encode(apiResponse{
-		DBKey:    dbKey,
-		FileName: userSession.(Session).FileName,
-		DBType:   userSession.(Session).DBType,
-		Message:  "Successfully created boltdb file: " + dbKey,
-		Error:    nil,
-	})
+	json.NewEncoder(ctx).Encode(generateResponse("Reconnected to db", nil, &dbSession))
 }
 
 // removeFile is the handler for the POST /api/v1/db/dbKey endpoint.
 func removeFile(ctx *fasthttp.RequestCtx) {
 
-	// get the dbKey from params
-	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
-	log.Println("dbKey:", dbKey)
-
-	// load the db from user session
-	userSession, valid := session.Load(dbKey)
-	if !valid {
-		var err error
-		// try restoring user session
-		if userSession, err = restoreSession(dbKey); err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
+	// get the dbKey from header
+	dbSession, err := sessionHandler(ctx)
+	if err != nil {
+		log.Println(err)
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		return
 	}
-	log.Println("userSession:", userSession)
-	userSession.(Session).DB.CloseDB()
-	dbType := userSession.(Session).DBType
-	session.Delete(dbKey)
+
+	// close the db
+	dbSession.DB.CloseDB()
+	dbType := dbSession.DBType
+	session.Delete(dbSession.dbKey)
 
 	// remove the folder
-	log.Println("removing folder:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbKey)
-	err := os.RemoveAll("temp" + string(os.PathSeparator) + dbType + string(os.PathSeparator) + dbKey)
+	log.Println("removing folder:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbSession.dbKey)
+	err = os.RemoveAll("temp" + string(os.PathSeparator) + dbType + string(os.PathSeparator) + dbSession.dbKey)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
@@ -175,102 +141,21 @@ func removeFile(ctx *fasthttp.RequestCtx) {
 	}
 
 	// return success message to UI
-	json.NewEncoder(ctx).Encode(apiResponse{
-		DBKey:   dbKey,
-		Message: "Successfully closed boltdb file: " + dbKey,
-		Error:   nil,
-	})
+	json.NewEncoder(ctx).Encode(generateResponse("Cleared DB session and files", nil, &dbSession))
 }
 
 // downloadFile is the handler for the GET /api/v1/db/download/dbKey/file endpoint.
 // Downloads the boltdb file to the UI.
 func downloadFile(ctx *fasthttp.RequestCtx) {
 
-	// get the dbKey from params
-	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
-	log.Println("dbKey:", dbKey)
-
-	// load the db from user session
-	userSession, valid := session.Load(dbKey)
-	if !valid {
-		var err error
-		// try restoring user session
-		if userSession, err = restoreSession(dbKey); err != nil {
-			log.Println(err)
-			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-			return
-		}
-	}
-	sessionInfo := userSession.(Session)
-	sessionInfo.DB.CloseDB()
-
-	// return the file to the UI
-	ctx.SendFile("temp" + string(os.PathSeparator) + sessionInfo.DBType + string(os.PathSeparator) + dbKey + string(os.PathSeparator) + sessionInfo.FileName)
-}
-
-// restoreSession restores the user session from the boltdb / buntdb file if it exists on client
-func restoreSession(dbKey string) (userSession Session, err error) {
-
-	// get the file name under folder
-	dbTypes, err := ioutil.ReadDir("temp" + string(os.PathSeparator))
+	// get the dbKey from header
+	dbSession, err := sessionHandler(ctx)
 	if err != nil {
 		log.Println(err)
-		err = errors.New("Error reading db folder: " + err.Error())
+		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 		return
 	}
-	log.Println("dbTypes:", dbTypes)
 
-	// iterate over files
-	for _, dbType := range dbTypes {
-
-		var dbKeys []fs.FileInfo
-		// get the file name under folder
-		dbKeys, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator))
-		if err != nil {
-			log.Println(err)
-			err = errors.New("Error reading db folder: " + err.Error())
-			return
-		}
-		log.Println("dbKeys:", dbKeys)
-
-		// iterate over files
-		for _, dbkey := range dbKeys {
-			log.Println("dbkey:", dbkey.Name(), " | dbKey:", dbkey)
-
-			if dbkey.Name() == dbKey {
-
-				var files []fs.FileInfo
-				// get the file name under folder
-				files, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator) + dbKey)
-				if err != nil {
-					log.Println(err)
-					err = errors.New("Error reading db folder: " + err.Error())
-					return
-				}
-
-				// get the file name
-				file := files[0].Name()
-
-				userSession.DB, err = database.NewDB("temp"+string(os.PathSeparator)+dbType.Name()+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+file, dbType.Name())
-				if err != nil {
-					log.Println(err)
-					err = errors.New(err.Error())
-					os.RemoveAll("temp" + string(os.PathSeparator) + dbKey)
-					return
-				}
-
-				userSession = Session{dbKey, file, dbType.Name(), userSession.DB}
-				log.Println("userSession: ", userSession)
-				session.Store(dbKey, userSession)
-			}
-		}
-	}
-
-	// if user session is still nil, return error
-	if (userSession == Session{}) || userSession.DB == nil {
-		log.Println("invalid dbKey")
-		err = errors.New("invalid dbKey")
-		return
-	}
-	return
+	// return the file to the UI
+	ctx.SendFile("temp" + string(os.PathSeparator) + dbSession.DBType + string(os.PathSeparator) + dbSession.dbKey + string(os.PathSeparator) + dbSession.FileName)
 }

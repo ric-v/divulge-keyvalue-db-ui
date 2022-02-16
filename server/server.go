@@ -1,11 +1,15 @@
 package server
 
 import (
+	"errors"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/fasthttp/router"
+	"github.com/ric-v/divulge-keyvalue-db-ui/database"
 	"github.com/valyala/fasthttp"
 )
 
@@ -101,4 +105,89 @@ func Serve(port string, debug bool) {
 	// serve the handlers on the router
 	log.Println("starting server on port:", port)
 	log.Fatal(server.ListenAndServe(":" + port))
+}
+
+// sessionHandler godoc - loads the db key from header for db access
+func sessionHandler(ctx *fasthttp.RequestCtx) (dbSession Session, err error) {
+
+	// get the dbKey from params
+	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
+	log.Println("dbKey:", dbKey)
+
+	// load the db from user session
+	userSession, valid := session.Load(dbKey)
+	if !valid {
+
+		var dbTypes []fs.FileInfo
+		// get the file name under folder
+		dbTypes, err = ioutil.ReadDir("temp" + string(os.PathSeparator))
+		if err != nil {
+			log.Println(err)
+			err = errors.New("Error reading db folder: " + err.Error())
+			return
+		}
+		log.Println("dbTypes:", dbTypes)
+
+		// iterate over files
+		for _, dbType := range dbTypes {
+
+			var dbKeys []fs.FileInfo
+			// get the file name under folder
+			dbKeys, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator))
+			if err != nil {
+				log.Println(err)
+				err = errors.New("Error reading db folder: " + err.Error())
+				return
+			}
+			log.Println("dbKeys:", dbKeys)
+
+			// iterate over files
+			for _, dbkey := range dbKeys {
+				log.Println("dbkey:", dbkey.Name(), " | dbKey:", dbkey)
+
+				if dbkey.Name() == dbKey {
+
+					var files []fs.FileInfo
+					// get the file name under folder
+					files, err = ioutil.ReadDir("temp" + string(os.PathSeparator) + dbType.Name() + string(os.PathSeparator) + dbKey)
+					if err != nil {
+						log.Println(err)
+						err = errors.New("Error reading db folder: " + err.Error())
+						return
+					}
+
+					// get the file name
+					file := files[0].Name()
+
+					var dbConn database.DB
+					dbConn, err = database.NewDB("temp"+string(os.PathSeparator)+dbType.Name()+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+file, dbType.Name())
+					if err != nil {
+						log.Println(err)
+						err = errors.New(err.Error())
+						os.RemoveAll("temp" + string(os.PathSeparator) + dbKey)
+						return
+					}
+
+					dbSession = Session{dbKey, file, dbType.Name(), dbConn}
+					log.Println("userSession: ", dbSession)
+					session.Store(dbKey, dbSession)
+					return
+				}
+			}
+		}
+
+		// if user session is still nil, return error
+		if (dbSession == Session{}) || dbSession.DB == nil {
+			log.Println("invalid dbKey")
+			err = errors.New("invalid dbKey")
+			return
+		}
+	}
+
+	var ok bool
+	if dbSession, ok = userSession.(Session); !ok {
+		err = errors.New("invalid session")
+		return
+	}
+	return
 }
