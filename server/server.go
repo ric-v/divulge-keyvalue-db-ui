@@ -28,6 +28,13 @@ func Serve(port string, debug bool) {
 	// create a new router
 	r := router.New()
 	r.HandleOPTIONS = true
+	r.GlobalOPTIONS = func(ctx *fasthttp.RequestCtx) {
+		// allow cors
+		ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
+		ctx.Response.Header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		ctx.Response.Header.Set("Access-Control-Allow-Headers", "*")
+		ctx.SetStatusCode(fasthttp.StatusOK)
+	}
 
 	// /api/v1/ routes
 	v1 := r.Group("/api/v1")
@@ -107,11 +114,11 @@ func Serve(port string, debug bool) {
 	log.Fatal(server.ListenAndServe(":" + port))
 }
 
-// sessionHandler godoc - loads the db key from header for db access
-func sessionHandler(ctx *fasthttp.RequestCtx) (dbSession Session, err error) {
+// handleDBSession godoc - loads the db key from header for db access
+func handleDBSession(ctx *fasthttp.RequestCtx) (dbSession Session, err error) {
 
 	// get the dbKey from params
-	dbKey := string(ctx.QueryArgs().Peek("dbkey"))
+	dbKey := string(ctx.Request.Header.Peek("Db-Key"))
 	log.Println("dbKey:", dbKey)
 
 	// load the db from user session

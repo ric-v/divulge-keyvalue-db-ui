@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"log"
+	"net/url"
 
 	"github.com/ric-v/divulge-keyvalue-db-ui/database"
 	"github.com/valyala/fasthttp"
@@ -14,7 +15,7 @@ func addBucket(ctx *fasthttp.RequestCtx) {
 
 	var bucket string
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -49,10 +50,15 @@ func addBucket(ctx *fasthttp.RequestCtx) {
 // listBucket godoc - loads the list of buckets in a boltdb file
 func listBuckets(ctx *fasthttp.RequestCtx) {
 
-	var buckets []string
+	type bucketList struct {
+		Buckets       []string `json:"buckets"`
+		DefaultBucket string   `json:"defaultBucket"`
+	}
+
+	var buckets bucketList
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -64,12 +70,14 @@ func listBuckets(ctx *fasthttp.RequestCtx) {
 	case database.BOLT_DB:
 		var err error
 		// get the list of buckets from the db
-		buckets, err = dbSession.DB.Conn().(*database.BoltDB).ListBuckets()
+		list, err := dbSession.DB.Conn().(*database.BoltDB).ListBuckets()
 		if err != nil {
 			log.Println(err)
 			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 			return
 		}
+		buckets.Buckets = list
+		buckets.DefaultBucket = dbSession.DB.Conn().(*database.BoltDB).GetDefBucket()
 	}
 
 	// return success message to UI
@@ -81,7 +89,7 @@ func setBucket(ctx *fasthttp.RequestCtx) {
 
 	var bucket string
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -93,6 +101,7 @@ func setBucket(ctx *fasthttp.RequestCtx) {
 	case database.BOLT_DB:
 		// get the DB type from params
 		bucket = string(ctx.UserValue("bucket").(string))
+		bucket, _ = url.QueryUnescape(bucket)
 		log.Println("bucket:", bucket)
 
 		// set the bucket in the db
@@ -114,7 +123,7 @@ func deleteBucket(ctx *fasthttp.RequestCtx) {
 
 	var bucket string
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)

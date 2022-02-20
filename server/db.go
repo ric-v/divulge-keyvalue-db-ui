@@ -16,7 +16,7 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 	var data []database.KeyValuePair
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -94,7 +94,7 @@ func listKeyValue(ctx *fasthttp.RequestCtx) {
 func insertKeyValue(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -131,7 +131,7 @@ func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 	}
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -178,7 +178,7 @@ func deleteKeyValue(ctx *fasthttp.RequestCtx) {
 func updateKeyValue(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)

@@ -19,7 +19,15 @@ type Props = {
   setLoadView: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function FixedSizeGrid(props: Props) {
+export default function FixedSizeGrid({
+  dbkey,
+  dbname,
+  status,
+  setStatus,
+  setDbname,
+  setDbkey,
+  setLoadView,
+}: Props) {
   const data = {
     columns: [],
     rows: [],
@@ -34,8 +42,8 @@ export default function FixedSizeGrid(props: Props) {
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
-    http
-      .get("/api/v1/db/?dbkey=" + props.dbkey)
+    http(dbkey)
+      .get("/api/v1/db/")
       .then((resp) => {
         console.log("setting data", resp.data);
         setDataGrid(resp.data.data);
@@ -59,8 +67,8 @@ export default function FixedSizeGrid(props: Props) {
     const newValue = e.value;
     const key: any = dataGrid.rows[+e.id - 1];
     console.log("newValue", newValue, "key", key.key);
-    http
-      .put("/api/v1/db/" + key.key + "?dbkey=" + props.dbkey, {
+    http(dbkey)
+      .put("/api/v1/db/" + key.key, {
         value: newValue,
         key: key.key,
       })
@@ -115,9 +123,9 @@ export default function FixedSizeGrid(props: Props) {
           }}
           componentsProps={{
             footer: {
-              status: props.status,
+              status: status,
               setUpdated: setUpdated,
-              dbkey: props.dbkey,
+              dbkey: dbkey,
               showDelete: showDelete,
               keys: keysToDelete,
             },

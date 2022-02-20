@@ -125,6 +125,11 @@ func (db *BoltDB) SetBucket(bucketName string) {
 	db.bucketName = []byte(bucketName)
 }
 
+// SetBucket godoc - Sets the current bucket
+func (db *BoltDB) GetDefBucket() string {
+	return string(db.bucketName)
+}
+
 // ListBuckets godoc - Lists all buckets in the database
 func (db *BoltDB) ListBuckets() (data []string, err error) {
 

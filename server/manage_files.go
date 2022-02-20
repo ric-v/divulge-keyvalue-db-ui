@@ -104,7 +104,7 @@ func newFile(ctx *fasthttp.RequestCtx) {
 func loadFile(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -119,7 +119,7 @@ func loadFile(ctx *fasthttp.RequestCtx) {
 func removeFile(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
@@ -149,7 +149,7 @@ func removeFile(ctx *fasthttp.RequestCtx) {
 func downloadFile(ctx *fasthttp.RequestCtx) {
 
 	// get the dbKey from header
-	dbSession, err := sessionHandler(ctx)
+	dbSession, err := handleDBSession(ctx)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
