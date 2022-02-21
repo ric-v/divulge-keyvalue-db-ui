@@ -11,15 +11,17 @@ import { Box } from "@mui/material";
 
 type Props = {
   dbkey: string;
-  dbname: string;
   status: string;
-  setStatus: React.Dispatch<React.SetStateAction<string>>;
-  setDbname: React.Dispatch<React.SetStateAction<string>>;
-  setDbkey: React.Dispatch<React.SetStateAction<string>>;
-  setLoadView: React.Dispatch<React.SetStateAction<boolean>>;
+  dbtype: string;
+  bucket: string;
 };
 
-export default function FixedSizeGrid(props: Props) {
+export default function FixedSizeGrid({
+  dbkey,
+  status,
+  dbtype,
+  bucket,
+}: Props) {
   const data = {
     columns: [],
     rows: [],
@@ -34,8 +36,19 @@ export default function FixedSizeGrid(props: Props) {
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
-    http
-      .get("/api/v1/db/?dbkey=" + props.dbkey)
+    if (dbtype === "boltdb" && bucket === "") {
+      enqueueSnackbar("Select a default bucket to load data from DB", {
+        key: "warning",
+        variant: "warning",
+        draggable: true,
+        onClick: () => {
+          closeSnackbar("warning");
+        },
+      });
+      return;
+    }
+    http(dbkey)
+      .get("/api/v1/db/")
       .then((resp) => {
         console.log("setting data", resp.data);
         setDataGrid(resp.data.data);
@@ -53,14 +66,14 @@ export default function FixedSizeGrid(props: Props) {
       });
     setSelectionModel([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updated]);
+  }, [updated, dbtype, bucket]);
 
   const handleUpdate = (e: any) => {
     const newValue = e.value;
     const key: any = dataGrid.rows[+e.id - 1];
     console.log("newValue", newValue, "key", key.key);
-    http
-      .put("/api/v1/db/" + key.key + "?dbkey=" + props.dbkey, {
+    http(dbkey)
+      .put("/api/v1/db/" + key.key, {
         value: newValue,
         key: key.key,
       })
@@ -115,9 +128,9 @@ export default function FixedSizeGrid(props: Props) {
           }}
           componentsProps={{
             footer: {
-              status: props.status,
+              status: status,
               setUpdated: setUpdated,
-              dbkey: props.dbkey,
+              dbkey: dbkey,
               showDelete: showDelete,
               keys: keysToDelete,
             },

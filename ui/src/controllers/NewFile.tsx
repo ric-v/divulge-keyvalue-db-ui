@@ -7,6 +7,7 @@ type FileUploadProps = {
   dbName: string;
   setDbname: React.Dispatch<React.SetStateAction<string>>;
   setDbkey: React.Dispatch<React.SetStateAction<string>>;
+  dbtype: string;
   setStatus: React.Dispatch<React.SetStateAction<string>>;
 };
 
@@ -14,6 +15,7 @@ const NewFile = ({
   dbName,
   setDbname,
   setDbkey,
+  dbtype,
   setStatus,
 }: FileUploadProps) => {
   const [inputDbName, setInputDbName] = useState("");
@@ -34,8 +36,8 @@ const NewFile = ({
   }, [inputDbName, errorMessage]);
 
   const createNewFile = () => {
-    http
-      .post("/api/v1/new?file=" + dbName + ".db&dbtype=buntdb")
+    http("")
+      .post("/api/v1/new?file=" + dbName + ".db&dbtype=" + dbtype)
       .then((resp) => {
         enqueueSnackbar("File created successfully", {
           key: "success",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AddIcon from "@material-ui/icons/Add";
 import {
   Tooltip,
@@ -43,8 +43,8 @@ const AddEntryModal = ({ setUpdated }: AddEntryModalProps) => {
       value,
     };
 
-    http
-      .post("/api/v1/db?dbkey=" + localStorage.getItem("dbkey"), payload)
+    http(String(localStorage.getItem("dbkey")))
+      .post("/api/v1/db", payload)
       .then((resp) => {
         enqueueSnackbar("File created successfully", {
           key: "success",

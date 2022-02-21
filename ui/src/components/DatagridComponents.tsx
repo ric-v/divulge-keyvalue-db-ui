@@ -134,8 +134,8 @@ export const CustomFooterStatusComponent = ({
 
   // handles delete for keys in db/bucket
   const handleDelete = (keys: any[]) => {
-    http
-      .delete("/api/v1/db/?dbkey=" + dbkey, { data: { keys: keys } })
+    http(dbkey)
+      .delete("/api/v1/db", { data: { keys: keys } })
       .then((resp) => {
         enqueueSnackbar(resp.data.message, {
           key: "Deleted",
@@ -199,7 +199,9 @@ export const CustomFooterStatusComponent = ({
           onChange={(event, value) => apiRef.current.setPage(value - 1)}
         />
       </Box>
-      <Typography color={"gray"} variant="caption">*NOTE: Double click an entry to update the value</Typography>
+      <Typography color={"gray"} variant="caption">
+        *NOTE: Double click an entry to update the value
+      </Typography>
     </>
   );
 };

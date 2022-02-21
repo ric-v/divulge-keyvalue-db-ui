@@ -5,12 +5,18 @@ import http from "../services/axios-common";
 import ProgressBar from "../components/ProgressBar";
 
 type FileUploadProps = {
+  dbtype: string;
   setDbname: React.Dispatch<React.SetStateAction<string>>;
   setDbkey: React.Dispatch<React.SetStateAction<string>>;
   setStatus: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const FileUpload = ({ setDbname, setDbkey, setStatus }: FileUploadProps) => {
+const FileUpload = ({
+  dbtype,
+  setDbname,
+  setDbkey,
+  setStatus,
+}: FileUploadProps) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [file, setFile] = useState<string | Blob | File>("");
 
@@ -25,8 +31,8 @@ const FileUpload = ({ setDbname, setDbkey, setStatus }: FileUploadProps) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    http
-      .post("/api/v1/upload?dbtype=buntdb", formData, {
+    http("")
+      .post("/api/v1/upload?dbtype=" + dbtype, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -9,6 +9,11 @@ type BuntDB struct {
 	*buntdb.DB
 }
 
+// Conn godoc - Returns the underlying database connection
+func (db *BuntDB) Conn() interface{} {
+	return db
+}
+
 // openBunt godoc - Creates a new BuntDB instance
 func openBunt(fileName string) (db *BuntDB, err error) {
 

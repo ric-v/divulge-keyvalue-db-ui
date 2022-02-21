@@ -1,13 +1,18 @@
 package server
 
-import "github.com/ric-v/divulge-keyvalue-db-ui/database"
+import (
+	"log"
+	"sync"
+
+	"github.com/ric-v/divulge-keyvalue-db-ui/database"
+)
 
 type apiResponse struct {
 	DBKey    string          `json:"dbkey"`
 	FileName string          `json:"filename"`
 	DBType   string          `json:"dbtype"`
 	Message  string          `json:"message"`
-	Data     Datagrid        `json:"data"`
+	Data     interface{}     `json:"data"`
 	Error    []errorResponse `json:"error"`
 }
 
@@ -56,7 +61,7 @@ type errorResponse struct {
 
 // Server - for managing db sessions with unique dbKey for each open session from UI
 type Session struct {
-	dbKey    string
+	DbKey    string
 	FileName string
 	DBType   string
 	DB       database.DB
@@ -66,4 +71,21 @@ type Session struct {
 type NewEntry struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+var session sync.Map
+
+// generateResponse godoc - generates a response for the UI
+var generateResponse = func(msg string, data interface{}, dbSession *Session) (resp apiResponse) {
+
+	// set the response message
+	resp = apiResponse{
+		DBKey:    dbSession.DbKey,
+		FileName: dbSession.FileName,
+		DBType:   dbSession.DBType,
+		Message:  msg,
+		Data:     data,
+	}
+	log.Println("response : ", resp)
+	return
 }

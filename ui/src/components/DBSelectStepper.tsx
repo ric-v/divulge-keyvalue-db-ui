@@ -88,7 +88,6 @@ export default function VerticalLinearStepper(
               e.preventDefault();
               setDbtype("boltdb");
             }}
-            disabled
           />
         </RadioGroup>
       </FormControl>
@@ -107,7 +106,7 @@ export default function VerticalLinearStepper(
                 inputProps={{ "aria-label": "controlled" }}
               />
             }
-            label={checked ? "Create new database" : "Upload existing database"}
+            label={checked ? "Upload existing database" : "Create new database"}
           />
         </FormGroup>
         {checked ? (
@@ -115,10 +114,12 @@ export default function VerticalLinearStepper(
             setDbkey={setDbkey}
             dbName={dbName}
             setDbname={setDbname}
+            dbtype={dbtype}
             setStatus={setStatus}
           />
         ) : (
           <FileUpload
+            dbtype={dbtype}
             setDbkey={setDbkey}
             setDbname={setDbname}
             setStatus={setStatus}

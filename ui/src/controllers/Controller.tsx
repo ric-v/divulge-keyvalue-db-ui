@@ -7,6 +7,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import http from "../services/axios-common";
 import { useSnackbar } from "notistack";
+import ManageBucketsModal from "../components/ManageBucketsModal";
 
 const Controller = () => {
   const [status, setStatus] = useState("connected");
@@ -14,6 +15,7 @@ const Controller = () => {
   const [dbkey, setDbkey] = useState("");
   const [dbtype, setDbtype] = useState("");
   const [loadView, setLoadView] = useState(false);
+  const [bucket, setBucket] = useState("");
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -25,8 +27,8 @@ const Controller = () => {
         setDbkey(dbkey);
         setStatus("connected");
 
-        http
-          .post("/api/v1/load?dbkey=" + dbkey)
+        http(dbkey)
+          .post("/api/v1/load")
           .then((resp) => {
             enqueueSnackbar("File loaded successfully", {
               key: "success",
@@ -36,9 +38,10 @@ const Controller = () => {
                 closeSnackbar("success");
               },
             });
-            console.log(resp);
+            console.log(resp.data);
             setDbname(resp.data.filename);
             setDbkey(resp.data.dbkey);
+            setDbtype(resp.data.dbtype);
             setStatus("connected");
             setLoadView(true);
             localStorage.setItem("dbkey", resp.data.dbkey);
@@ -52,13 +55,15 @@ const Controller = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dbkey, dbname, status, loadView, dbtype]);
+  }, [dbkey, bucket, loadView]);
 
   const downloadFile = (dbkey: string, dbname: string) => {
-    http
-      .get("/api/v1/download?dbkey=" + dbkey)
+    http(dbkey)
+      .get("/api/v1/download")
       .then((resp) => {
-        const url = window.URL.createObjectURL(new Blob([resp.data]));
+        const url = window.URL.createObjectURL(
+          new Blob([resp.data], { type: "application/file" })
+        );
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", dbname); //or any other extension
@@ -82,8 +87,8 @@ const Controller = () => {
     setDbname: Dispatch<SetStateAction<string>>,
     setDbkey: Dispatch<SetStateAction<string>>
   ) => {
-    http
-      .delete("/api/v1/clear?dbkey=" + dbkey)
+    http(dbkey)
+      .delete("/api/v1/clear")
       .then((_resp) => {
         enqueueSnackbar("Database connection closed", {
           key: "success",
@@ -141,6 +146,22 @@ const Controller = () => {
                   Database:{" "}
                 </Typography>
                 <Typography variant="h3">{dbname}</Typography>
+                {dbtype === "boltdb" ? (
+                  <Typography variant="caption" ml={"12px"}>
+                    {bucket}
+                  </Typography>
+                ) : (
+                  ""
+                )}
+
+                {dbtype === "boltdb" ? (
+                  <ManageBucketsModal
+                    defBucket={bucket}
+                    setBucket={setBucket}
+                  ></ManageBucketsModal>
+                ) : (
+                  ""
+                )}
               </Box>
               <Box
                 sx={{
@@ -177,12 +198,9 @@ const Controller = () => {
             </Grid>
             <FlexLayoutGrid
               dbkey={dbkey}
-              dbname={dbname}
               status={status}
-              setStatus={setStatus}
-              setDbkey={setDbkey}
-              setDbname={setDbname}
-              setLoadView={setLoadView}
+              dbtype={dbtype}
+              bucket={bucket}
             />
           </Grid>
         </Grid>
