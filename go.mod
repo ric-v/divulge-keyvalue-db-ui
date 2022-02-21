@@ -9,6 +9,8 @@ require (
 	github.com/valyala/fasthttp v1.33.0
 )
 
+require github.com/karalabe/xgo v0.0.0-20191115072854-c5ccff8648a7 // indirect
+
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/gorilla/mux v1.8.0
