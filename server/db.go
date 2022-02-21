@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 
 	"github.com/ric-v/divulge-keyvalue-db-ui/database"
 	"github.com/valyala/fasthttp"
@@ -187,6 +188,7 @@ func updateKeyValue(ctx *fasthttp.RequestCtx) {
 
 	// get the key from params
 	key := string(ctx.UserValue("key").(string))
+	key, _ = url.QueryUnescape(key)
 	log.Println("key:", key)
 
 	// get the value from payload

@@ -26,8 +26,8 @@ Simple DB CRUD operations service. Supports some golang Key-Value pair file base
 - [x] ~~Remove Key-Value pair~~
 - [x] ~~Update Key-Value pair~~
 - [x] ~~Download updated file~~
-- [ ] View Buckets in boltDB
-- [ ] Add / remove bucket
+- [x] View Buckets in boltDB
+- [x] Add / remove bucket
 - [ ] Move/Copy Key-Value pair under a bucket to another bucket
 
 ## Usage

@@ -16,10 +16,11 @@ import {
   ListItemButton,
 } from "@mui/material";
 import http from "../services/axios-common";
-import AddIcon from "@material-ui/icons/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useSnackbar } from "notistack";
 import { Box } from "@mui/system";
+import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
 type Props = {
   defBucket: string;
@@ -111,7 +112,6 @@ const ManageBucketsModal = ({ defBucket, setBucket }: Props) => {
             closeSnackbar(bucket);
           },
         });
-        console.log(resp);
         setAddBucket("");
         loadBuckets();
       })
@@ -163,7 +163,7 @@ const ManageBucketsModal = ({ defBucket, setBucket }: Props) => {
           color="secondary"
           onClick={() => handleClickOpen()}
         >
-          {/* <AddIcon /> */}
+          <PlaylistAddCheckIcon />
           <Typography ml={1}>Manage Buckets</Typography>
         </Fab>
       </Tooltip>
@@ -193,6 +193,7 @@ const ManageBucketsModal = ({ defBucket, setBucket }: Props) => {
                 buckets?.map((bucket) => (
                   <ListItemButton
                     role={undefined}
+                    key={bucket}
                     onClick={() => handleSetBucket(bucket)}
                     dense
                     sx={{
@@ -206,6 +207,7 @@ const ManageBucketsModal = ({ defBucket, setBucket }: Props) => {
                         bucket === defBucket ? "secondary.contrastText" : "",
                     }}
                   >
+                    <LabelOutlinedIcon sx={{ mr: 3 }} />
                     <ListItemText
                       id={bucket}
                       primary={bucket}

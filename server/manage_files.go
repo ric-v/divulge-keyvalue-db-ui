@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -44,8 +46,8 @@ func uploadFile(ctx *fasthttp.RequestCtx) {
 		return
 	}
 
-	// create the new boltdb file in the temp dir
-	log.Println("creating new boltdb file:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+files.Filename)
+	// create the new db file in the temp dir
+	log.Println("creating new db file:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+files.Filename)
 	db, err := database.NewDB("temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbKey+string(os.PathSeparator)+files.Filename, dbType)
 	if err != nil {
 		log.Println(err)
@@ -129,11 +131,11 @@ func removeFile(ctx *fasthttp.RequestCtx) {
 	// close the db
 	dbSession.DB.CloseDB()
 	dbType := dbSession.DBType
-	session.Delete(dbSession.dbKey)
+	session.Delete(dbSession.DbKey)
 
 	// remove the folder
-	log.Println("removing folder:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbSession.dbKey)
-	err = os.RemoveAll("temp" + string(os.PathSeparator) + dbType + string(os.PathSeparator) + dbSession.dbKey)
+	log.Println("removing folder:", "temp"+string(os.PathSeparator)+dbType+string(os.PathSeparator)+dbSession.DbKey)
+	err = os.RemoveAll("temp" + string(os.PathSeparator) + dbType + string(os.PathSeparator) + dbSession.DbKey)
 	if err != nil {
 		log.Println(err)
 		ctx.Error(err.Error(), fasthttp.StatusBadRequest)
@@ -155,7 +157,62 @@ func downloadFile(ctx *fasthttp.RequestCtx) {
 		ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
 		return
 	}
+	var file = "temp" + string(os.PathSeparator) + dbSession.DBType + string(os.PathSeparator) + dbSession.DbKey + string(os.PathSeparator) + dbSession.FileName
+
+	// check if db type is boltDB
+	if dbSession.DBType == database.BOLT_DB {
+		dbSession.DB.Conn().(*database.BoltDB).Sync()
+		dbSession.DB.CloseDB()
+
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			log.Println(err)
+			ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+			return
+		}
+
+		ctx.SetContentType("application/octet-stream")
+		ctx.SetBody(data)
+		ctx.SetStatusCode(fasthttp.StatusOK)
+		return
+
+		// // copy file to temp dir
+		// log.Println("copying file to temp dir:", "temp"+string(os.PathSeparator)+dbSession.DBType+string(os.PathSeparator)+dbSession.DbKey+string(os.PathSeparator)+dbSession.FileName)
+		// err = copyFile("temp"+string(os.PathSeparator)+dbSession.DBType+string(os.PathSeparator)+dbSession.DbKey+string(os.PathSeparator)+dbSession.FileName, "temp"+string(os.PathSeparator)+dbSession.FileName+".temp")
+		// if err != nil {
+		// 	log.Println(err)
+		// 	ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
+		// 	return
+		// }
+		// file = "temp" + string(os.PathSeparator) + dbSession.FileName + ".temp"
+	}
+	log.Println("file:", file)
 
 	// return the file to the UI
-	ctx.SendFile("temp" + string(os.PathSeparator) + dbSession.DBType + string(os.PathSeparator) + dbSession.dbKey + string(os.PathSeparator) + dbSession.FileName)
+	ctx.SendFile(file)
+}
+
+// copyFile is a helper function to copy a file from one location to another.
+func copyFile(src, dst string) error {
+
+	// open source file
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	// open destination file
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// copy file
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return err
 }

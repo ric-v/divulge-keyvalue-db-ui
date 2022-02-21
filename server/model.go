@@ -61,7 +61,7 @@ type errorResponse struct {
 
 // Server - for managing db sessions with unique dbKey for each open session from UI
 type Session struct {
-	dbKey    string
+	DbKey    string
 	FileName string
 	DBType   string
 	DB       database.DB
@@ -80,7 +80,7 @@ var generateResponse = func(msg string, data interface{}, dbSession *Session) (r
 
 	// set the response message
 	resp = apiResponse{
-		DBKey:    dbSession.dbKey,
+		DBKey:    dbSession.DbKey,
 		FileName: dbSession.FileName,
 		DBType:   dbSession.DBType,
 		Message:  msg,

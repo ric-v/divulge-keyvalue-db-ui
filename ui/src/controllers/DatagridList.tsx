@@ -11,22 +11,16 @@ import { Box } from "@mui/material";
 
 type Props = {
   dbkey: string;
-  dbname: string;
   status: string;
-  setStatus: React.Dispatch<React.SetStateAction<string>>;
-  setDbname: React.Dispatch<React.SetStateAction<string>>;
-  setDbkey: React.Dispatch<React.SetStateAction<string>>;
-  setLoadView: React.Dispatch<React.SetStateAction<boolean>>;
+  dbtype: string;
+  bucket: string;
 };
 
 export default function FixedSizeGrid({
   dbkey,
-  dbname,
   status,
-  setStatus,
-  setDbname,
-  setDbkey,
-  setLoadView,
+  dbtype,
+  bucket,
 }: Props) {
   const data = {
     columns: [],
@@ -42,6 +36,17 @@ export default function FixedSizeGrid({
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
+    if (dbtype === "boltdb" && bucket === "") {
+      enqueueSnackbar("Select a default bucket to load data from DB", {
+        key: "warning",
+        variant: "warning",
+        draggable: true,
+        onClick: () => {
+          closeSnackbar("warning");
+        },
+      });
+      return;
+    }
     http(dbkey)
       .get("/api/v1/db/")
       .then((resp) => {
@@ -61,7 +66,7 @@ export default function FixedSizeGrid({
       });
     setSelectionModel([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updated]);
+  }, [updated, dbtype, bucket]);
 
   const handleUpdate = (e: any) => {
     const newValue = e.value;

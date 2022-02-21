@@ -38,9 +38,10 @@ const Controller = () => {
                 closeSnackbar("success");
               },
             });
-            console.log(resp);
+            console.log(resp.data);
             setDbname(resp.data.filename);
             setDbkey(resp.data.dbkey);
+            setDbtype(resp.data.dbtype);
             setStatus("connected");
             setLoadView(true);
             localStorage.setItem("dbkey", resp.data.dbkey);
@@ -60,7 +61,9 @@ const Controller = () => {
     http(dbkey)
       .get("/api/v1/download")
       .then((resp) => {
-        const url = window.URL.createObjectURL(new Blob([resp.data]));
+        const url = window.URL.createObjectURL(
+          new Blob([resp.data], { type: "application/file" })
+        );
         const link = document.createElement("a");
         link.href = url;
         link.setAttribute("download", dbname); //or any other extension
@@ -195,12 +198,9 @@ const Controller = () => {
             </Grid>
             <FlexLayoutGrid
               dbkey={dbkey}
-              dbname={dbname}
               status={status}
-              setStatus={setStatus}
-              setDbkey={setDbkey}
-              setDbname={setDbname}
-              setLoadView={setLoadView}
+              dbtype={dbtype}
+              bucket={bucket}
             />
           </Grid>
         </Grid>
