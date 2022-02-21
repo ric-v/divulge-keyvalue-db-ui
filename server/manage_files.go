@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -175,44 +174,9 @@ func downloadFile(ctx *fasthttp.RequestCtx) {
 		ctx.SetBody(data)
 		ctx.SetStatusCode(fasthttp.StatusOK)
 		return
-
-		// // copy file to temp dir
-		// log.Println("copying file to temp dir:", "temp"+string(os.PathSeparator)+dbSession.DBType+string(os.PathSeparator)+dbSession.DbKey+string(os.PathSeparator)+dbSession.FileName)
-		// err = copyFile("temp"+string(os.PathSeparator)+dbSession.DBType+string(os.PathSeparator)+dbSession.DbKey+string(os.PathSeparator)+dbSession.FileName, "temp"+string(os.PathSeparator)+dbSession.FileName+".temp")
-		// if err != nil {
-		// 	log.Println(err)
-		// 	ctx.Error(err.Error(), fasthttp.StatusInternalServerError)
-		// 	return
-		// }
-		// file = "temp" + string(os.PathSeparator) + dbSession.FileName + ".temp"
 	}
 	log.Println("file:", file)
 
 	// return the file to the UI
 	ctx.SendFile(file)
-}
-
-// copyFile is a helper function to copy a file from one location to another.
-func copyFile(src, dst string) error {
-
-	// open source file
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-
-	// open destination file
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// copy file
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-	return err
 }
