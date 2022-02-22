@@ -54,6 +54,22 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
 
   - The service will be available at <http://localhost:8080/>
 
+## Screeshots
+
+**Home screen:**![Home Light](ui/public/screenshots/home-light.png)
+
+**Home screen Dark side:** ![Home Dark](ui/public/screenshots/home-dark.png)
+
+**Upload/Create new DB:** ![Upload / Create DB](ui/public/screenshots/upload-create-db.png)
+
+**BuntDB paginated view:** ![BuntDB Paginated](ui/public/screenshots/buntdb-paginated.png)
+
+**BoltDB view:** ![BoltDB View](ui/public/screenshots/bolt-view.png)
+
+**BoltDB view dark side:** ![BoltDB View Dark](ui/public/screenshots/bolt-view-dark.png)
+
+**Manage buckets:** ![Manage Bolt Buckets](ui/public/screenshots/manage-buckets-bolt.png)
+
 ## Supported DB
 
 - [BuntDB](https://github.com/tidwall/buntdb)
@@ -61,9 +77,9 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
 
 ## Technologies used
 
-- Golang 1.17.x
-- ReactJS 17.x
-- Material UI v5.x
+- [Golang 1.17.x](https://go.dev/)
+- [ReactJS 17.x](https://reactjs.org/)
+- [Material UI v5.x](https://mui.com/)
 - [fasthttp](https://github.com/valyala/fasthttp) ([fasthttp mux](https://github.com/fasthttp/router))
 - [BoltDB](https://github.com/boltdb/bolt)
 - [BuntDB](https://github.com/tidwall/buntdb)
