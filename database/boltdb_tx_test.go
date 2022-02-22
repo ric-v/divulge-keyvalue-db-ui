@@ -2,8 +2,36 @@ package database
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
+
+func TestBoltDB_Conn(t *testing.T) {
+
+	db, _ := openBolt("test.db")
+	db.bucketName = []byte("test-bucket")
+
+	tests := []struct {
+		name string
+		db   *BoltDB
+		want interface{}
+	}{
+		{
+			name: "success",
+			db:   db,
+			want: db,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.db.Conn(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("BoltDB.Conn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
 
 func Test_openBolt(t *testing.T) {
 	type args struct {
@@ -249,6 +277,168 @@ func TestBoltDB_List(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BoltDB.List() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
+
+func TestBoltDB_AddBucket(t *testing.T) {
+	type args struct {
+		bucketName string
+	}
+
+	db, _ := openBolt("test.db")
+
+	tests := []struct {
+		name    string
+		db      *BoltDB
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success",
+			db:   db,
+			args: args{
+				bucketName: "test-bucket",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.db.AddBucket(tt.args.bucketName); (err != nil) != tt.wantErr {
+				t.Errorf("BoltDB.AddBucket() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
+
+func TestBoltDB_SetBucket(t *testing.T) {
+	type args struct {
+		bucketName string
+	}
+
+	db, _ := openBolt("test.db")
+	db.AddBucket("test-bucket")
+
+	tests := []struct {
+		name string
+		db   *BoltDB
+		args args
+	}{
+		{
+			name: "success",
+			db:   db,
+			args: args{
+				bucketName: "test-bucket",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.db.SetBucket(tt.args.bucketName)
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
+
+func TestBoltDB_GetDefBucket(t *testing.T) {
+
+	db, _ := openBolt("test.db")
+	db.AddBucket("test-bucket")
+	db.SetBucket("test-bucket")
+
+	tests := []struct {
+		name string
+		db   *BoltDB
+		want string
+	}{
+		{
+			name: "success",
+			db:   db,
+			want: "test-bucket",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.db.GetDefBucket(); got != tt.want {
+				t.Errorf("BoltDB.GetDefBucket() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
+
+func TestBoltDB_ListBuckets(t *testing.T) {
+
+	db, _ := openBolt("test.db")
+	db.AddBucket("test-bucket")
+
+	tests := []struct {
+		name     string
+		db       *BoltDB
+		wantData []string
+		wantErr  bool
+	}{
+		{
+			name: "success",
+			db:   db,
+			wantData: []string{
+				"test-bucket",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotData, err := tt.db.ListBuckets()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("BoltDB.ListBuckets() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotData, tt.wantData) {
+				t.Errorf("BoltDB.ListBuckets() = %v, want %v", gotData, tt.wantData)
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
+
+func TestBoltDB_DeleteBucket(t *testing.T) {
+	type args struct {
+		bucketName string
+	}
+
+	db, _ := openBolt("test.db")
+	db.AddBucket("test-bucket")
+
+	tests := []struct {
+		name    string
+		db      *BoltDB
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "success",
+			db:   db,
+			args: args{
+				bucketName: "test-bucket",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.db.DeleteBucket(tt.args.bucketName); (err != nil) != tt.wantErr {
+				t.Errorf("BoltDB.DeleteBucket() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
