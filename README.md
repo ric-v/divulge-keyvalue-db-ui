@@ -9,6 +9,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ric-v/divulge-keyvalue-db-ui)](https://goreportcard.com/report/github.com/ric-v/divulge-keyvalue-db-ui)
 [![CodeFactor](https://www.codefactor.io/repository/github/ric-v/divulge-keyvalue-db-ui/badge)](https://www.codefactor.io/repository/github/ric-v/divulge-keyvalue-db-ui)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ric-v_divulge-keyvalue-db-ui&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ric-v_divulge-keyvalue-db-ui)
+[![GoDoc](https://godoc.org/github.com/narqo/go-badge?status.svg)](https://pkg.go.dev/github.com/ric-v/divulge-keyvalue-db-ui/database#)
+
 
 </div>
 

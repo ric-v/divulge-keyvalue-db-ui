@@ -2,8 +2,34 @@ package database
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
+
+func TestBuntDB_Conn(t *testing.T) {
+	db, _ := openBunt("test.db")
+
+	tests := []struct {
+		name string
+		db   *BuntDB
+		want interface{}
+	}{
+		{
+			name: "success",
+			db:   db,
+			want: db.Conn(),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.db.Conn(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("BuntDB.Conn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+	db.CloseDB()
+	os.Remove("test.db")
+}
 
 func Test_openBunt(t *testing.T) {
 	type args struct {
