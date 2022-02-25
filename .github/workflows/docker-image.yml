@@ -14,14 +14,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Build UI
       run: |
         cd ui
         npm i
         npm run build
-    - name: Build go server
-      run: |
-        go mod tidy
-        go build cmd/main.go
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Build
+      run: go build -v ./...
+
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag divulge-keyvalue-db-ui:$(date +%s)
