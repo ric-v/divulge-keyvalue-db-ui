@@ -27,14 +27,32 @@ Simple DB CRUD operations service. Supports some golang Key-Value pair file base
 - [x] ~~Add new Key-Value pair~~
 - [x] ~~Remove Key-Value pair~~
 - [x] ~~Update Key-Value pair~~
-- [x] ~~Download updated file~~
-- [x] View Buckets in boltDB
-- [x] Add / remove bucket
+- [x] Download updated file (not working on boltDB files)
+- [x] ~~View Buckets in boltDB~~
+- [x] ~~Add / remove bucket~~
 - [ ] Move/Copy Key-Value pair under a bucket to another bucket
 
 ## Usage
 
 Download the latest [release from here](https://github.com/ric-v/divulge-keyvalue-db-ui/releases)
+
+- ### Docker
+
+  - Docker must be installed [download here](https://www.docker.com/get-started)
+  - clone the repo and run docker command
+  
+  ```bash
+  git clone https://github.com/ric-v/divulge-keyvalue-db-ui.git
+  cd divulge-keyvalue-db-ui/
+
+  # to run and delete the container after stopping the same
+  docker run --name divulge-viewer --rm -it -p 8080:8080 divulge-viewer:latest
+
+  # or to run and keep the container
+  docker run --name divulge-viewer -it -p 8080:8080 divulge-viewer:latest
+  ```
+  
+  - The service will be available at <http://localhost:8080/>
 
 - ### windows
 
