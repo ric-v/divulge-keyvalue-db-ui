@@ -29,7 +29,7 @@ jobs:
         go-version: 1.17
 
     - name: Build
-      run: go build -v ./...
+      run: go build -v -o divulge cmd/main.go
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag divulge-keyvalue-db-ui:$(date +%s)
