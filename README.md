@@ -44,6 +44,7 @@ Download the latest [release from here](https://github.com/ric-v/divulge-keyvalu
   ```bash
   git clone https://github.com/ric-v/divulge-keyvalue-db-ui.git
   cd divulge-keyvalue-db-ui/
+  docker build -t divulge-viewer:latest .
 
   # to run and delete the container after stopping the same
   docker run --name divulge-viewer --rm -it -p 8080:8080 divulge-viewer:latest
