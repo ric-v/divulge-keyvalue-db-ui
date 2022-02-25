@@ -16,7 +16,9 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build UI
       run: |
+        ls -al
         cd ui
+        ls -al
         npm i
         npm run build
     - name: Build go server
