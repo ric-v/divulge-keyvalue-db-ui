@@ -21,7 +21,6 @@ const FileUpload = ({
   const [file, setFile] = useState<string | Blob | File>("");
 
   const [uploadProgress, updateUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const handleFileUpload = (e: FormEvent<HTMLFormElement>) => {
@@ -44,7 +43,6 @@ const FileUpload = ({
       .then((resp) => {
         // our mocked response will always return true
         // in practice, you would want to use the actual response object
-        setUploadStatus(true);
         setUploading(false);
 
         enqueueSnackbar("File uploaded successfully", {
