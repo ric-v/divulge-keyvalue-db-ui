@@ -67,3 +67,6 @@ package:
 
 docker_build:
 	docker build -t divulge-viewer:latest .
+
+docker_run:
+	docker run --name divulge-viewer --rm -it -p 8080:8080 divulge-viewer:latest
